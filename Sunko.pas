@@ -1,4 +1,4 @@
-﻿{$includenamespace ElementTypes.pas}
+﻿{$includenamespace WordTypes.pas}
 begin
 
 end.

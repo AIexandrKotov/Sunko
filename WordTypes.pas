@@ -1,7 +1,7 @@
-﻿namespace Sunko;
+﻿namespace WordTypes;
 
 type
-  ElementTypes = (
+  WordTypes = (
     ///Ключевое слово
     Keyword,
     ///Имя процедуры
