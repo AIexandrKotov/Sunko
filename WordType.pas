@@ -1,17 +1,22 @@
-﻿namespace WordTypes;
+﻿namespace WordType;
 
 type
-  WordTypes = (
+  ///Типы слов
+  WordType = (
     ///Ключевое слово
     Keyword,
     ///Имя процедуры
     ProcedureName,
     ///Имя функции
     FunctionName,
+    ///Вызов функции
+    FunctionCall,
     ///Имя константы
     ConstantName,
     ///Имя переменной
     VariableName,
+    ///Имя типа
+    TypeName,
     ///Целочиселнная константа
     IntegerLiteral,
     ///Строковая константа
@@ -21,7 +26,10 @@ type
     ///Временная константа
     DateLiteral,
     ///Выражение
-    Expression
+    Expression,
+    ///Разделитель
+    ///Примером разделителя является =
+    Splitter
   );
 
 end.

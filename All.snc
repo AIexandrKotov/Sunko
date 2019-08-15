@@ -17,7 +17,7 @@ sunko KTX
 	//этот оператор создаст f и возьмёт его из a.ktx
 	
 	//Вывод на экран
-	write x
+	!write x
 	//удаление переменной
 	delete x
 	
@@ -36,16 +36,16 @@ sunko KTX
 	
 	//i инициализируется по ходу
 	for (i, 1, 10)
-		write i
+		!write i
 	end
 	
 	int b = 1
 	//условный оператор
 	if (b = 1) then
-		writeln 'b is 1'
+		!writeln 'b is 1'
 	end
 	else
-		writeln 'b is 0'
+		!writeln 'b is 0'
 	end
 	
 	//
