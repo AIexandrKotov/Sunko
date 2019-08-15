@@ -19,6 +19,8 @@ type
   Operation = class
     private fStrings: array of string;
     private fWordsTypes: array of WordType;
+    
+    public property WordTypes: array of WordType read fWordsTypes write fWordsTypes;
   end;
 
 end.

@@ -1,4 +1,6 @@
-﻿
+﻿program Sunko;
+{$includenamespace TestSuite.pas}
+
 
 
 {$includenamespace WordTypes\WordType.pas}
@@ -19,5 +21,5 @@
 {$includenamespace Operation.pas}
 {$includenamespace Parser.pas}
 begin
-
+  TestSuite.Test;
 end.

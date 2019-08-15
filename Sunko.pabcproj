@@ -18,6 +18,7 @@
     <Item Type="SourceFile" Name="WT: Splitter.pas" Path="WordTypes\Splitter.pas" />
     <Item Type="SourceFile" Name="Operation.pas" Path="Operation.pas" />
     <Item Type="SourceFile" Name="Parser.pas" Path="Parser.pas" />
+    <Item Type="SourceFile" Name="TestSuite.pas" Path="TestSuite.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
   </Items>
 </Project>
