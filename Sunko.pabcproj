@@ -2,7 +2,6 @@
 <Project FileVersion="2" Name="Sunko" MainFile="Sunko.pas" OutputFileName="Sunko.exe" OutputDirectory="" ProjectType="ConsoleApp" IncludeDebugInfo="True" GenerateXMLDoc="False" CommandLineArguments="" AppIcon="" DeleteEXE="True" DeletePDB="True" Product="" Company="" Trademark="" Copyright="" Title="" Description="" MajorVersion="0" MinorVersion="0" BuildVersion="0" RevisionVersion="0">
   <Items>
     <Item Type="SourceFile" Name="Sunko.pas" Path="Sunko.pas" />
-	
     <Item Type="SourceFile" Name="WordType.pas" Path="WordTypes\WordType.pas" />
     <Item Type="SourceFile" Name="WT: Keyword.pas" Path="WordTypes\Keyword.pas" />
     <Item Type="SourceFile" Name="WT: ProcedureName.pas" Path="WordTypes\ProcedureName.pas" />
@@ -17,7 +16,6 @@
     <Item Type="SourceFile" Name="WT: DateLiteral.pas" Path="WordTypes\DateLiteral.pas" />
     <Item Type="SourceFile" Name="WT: Expression.pas" Path="WordTypes\Expression.pas" />
     <Item Type="SourceFile" Name="WT: Splitter.pas" Path="WordTypes\Splitter.pas" />
-	
     <Item Type="SourceFile" Name="Operation.pas" Path="Operation.pas" />
     <Item Type="SourceFile" Name="Parser.pas" Path="Parser.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
