@@ -20,6 +20,7 @@ type
     private fStrings: array of string;
     private fWordsTypes: array of WordType;
     
+    public property Strings: array of string read fStrings write fStrings;
     public property WordTypes: array of WordType read fWordsTypes write fWordsTypes;
   end;
 
