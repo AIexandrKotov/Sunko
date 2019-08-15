@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project FileVersion="2" Name="KTX" MainFile="KTX.pas" OutputFileName="KTX.dll" OutputDirectory="" ProjectType="Library" IncludeDebugInfo="True" GenerateXMLDoc="False" CommandLineArguments="" AppIcon="" DeleteEXE="True" DeletePDB="True" Product="" Company="" Trademark="" Copyright="" Title="" Description="" MajorVersion="0" MinorVersion="0" BuildVersion="0" RevisionVersion="0">
+  <Items>
+    <Item Type="SourceFile" Name="KTX.pas" Path="KTX.pas" />
+    <Item Type="SourceFile" Name="KTXFile.pas" Path="KTXFile.pas" />
+    <Item Type="SourceFile" Name="KTXPixel.pas" Path="KTXPixel.pas" />
+    <Item Type="SourceFile" Name="Synonims.pas" Path="Synonims.pas" />
+    <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
+  </Items>
+</Project>

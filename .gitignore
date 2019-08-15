@@ -1,0 +1,4 @@
+
+*.opt
+KTX/KTX.dll
+*.pdb

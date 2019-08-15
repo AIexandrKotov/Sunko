@@ -1,0 +1,92 @@
+sunko KTX
+	//
+	//  Синтаксис скрипта
+	//
+	
+	//создание переменной
+	//типы: int, real, string, date, KTX.File, KTX.Bitmap
+	date x
+	//присвоение значения
+	x = $currenttime
+	
+	//на # начинаются константы
+	//на $ начинаются функции и (!) процедуры
+	//на ? функции, возвращающие значение для условного оператора
+	
+	//ktxfile f = 'a.ktx'
+	//этот оператор создаст f и возьмёт его из a.ktx
+	
+	//Вывод на экран
+	write x
+	//удаление переменной
+	delete x
+	
+	//циклы
+	loop 10 do
+		write 0
+	end
+	
+	while (1 = 1) do
+		exit
+	end
+	
+	repeat
+		exit
+	until (1 = 1)
+	
+	//i инициализируется по ходу
+	for (i, 1, 10)
+		write i
+	end
+	
+	int b = 1
+	//условный оператор
+	if (b = 1) then
+		writeln 'b is 1'
+	end
+	else
+		writeln 'b is 0'
+	end
+	
+	//
+	//  Специфические возможности GCS
+	//
+	
+	//todo
+	
+	//
+	//	Специфические возможности KTX
+	//
+	
+	//  Ограничивает окно и буфер консоли
+	!KTX.Limit 100 30
+	
+	//здесь f - переменная типа KTX.File
+	//!KTX.Limit f
+	
+	//!KTX.SetPos 1 1
+	//!KTX.CursorVisible 0
+	//!KTX.SetBufSize 100 30
+	//!KTX.SetWinSize 100 30
+	//!KTX.Clear
+	//!KTX.Draw f
+	
+	KTX.File kf
+	KTX.Bitmap bm
+	!KTX.Convert kf bm #new #R128
+	
+	//
+	//	Специфические возможности GC5A
+	//
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+end
