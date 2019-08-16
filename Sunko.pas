@@ -6,7 +6,6 @@
 {$includenamespace WordTypes\WordType.pas}
 {$includenamespace WordTypes\Keyword.pas}
 {$includenamespace WordTypes\ProcedureName.pas}
-{$includenamespace WordTypes\FunctionName.pas}
 {$includenamespace WordTypes\FunctionCall.pas}
 {$includenamespace WordTypes\ConstantName.pas}
 {$includenamespace WordTypes\VariableName.pas}

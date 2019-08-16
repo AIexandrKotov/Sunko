@@ -13,7 +13,6 @@ type
       for var i := 0 to s.Length - 1 do
       begin
         if ProcedureName.IsProcedureName(s[i]) then Result[i] := new ProcedureName
-        else if FunctionName.IsFunctionName(s[i]) then Result[i] := new FunctionName
         else if FunctionCall.IsFunctionCall(s[i]) then Result[i] := new FunctionCall
         else if ConstantName.IsConstantName(s[i]) then Result[i] := new ConstantName
         else if IntegerLiteral.IsIntegerLiteral(s[i]) then Result[i] := new IntegerLiteral
@@ -38,11 +37,12 @@ type
       var words := new List<string>;
       var current := new StringBuilder;
       var nested := false;
-      var nestedmethod := false;
+      var nestedfunc := false;
       var nestedbracket := 0;
       for var i := 1 to s.Length do
       begin
-        if nested then current += s[i]
+        if nestedfunc then current += s[i]
+        else if nested then current += s[i]
         else
         begin
           if nestedbracket > 0 then current += s[i] else
@@ -67,12 +67,17 @@ type
         
         if s[i] = '''' then
         begin
-          if not nested then current += '''';
+          if not nestedfunc then if (not nested) then current += '''';
           nested := not nested;
+        end;
+        if (not nested) and (s[i] = '$') then
+        begin
+          nestedfunc := not nestedfunc;
         end;
         if s[i] = '(' then nestedbracket += 1;
         if s[i] = ')' then nestedbracket -= 1;
       end;
+      if current.Length <> 0 then words += current.ToString;
       
       Result.Strings := words.ToArray;
       Result.WordTypes := WordTypes(Result.Strings);

@@ -5,7 +5,6 @@
     <Item Type="SourceFile" Name="WordType.pas" Path="WordTypes\WordType.pas" />
     <Item Type="SourceFile" Name="WT: Keyword.pas" Path="WordTypes\Keyword.pas" />
     <Item Type="SourceFile" Name="WT: ProcedureName.pas" Path="WordTypes\ProcedureName.pas" />
-    <Item Type="SourceFile" Name="WT: FunctionName.pas" Path="WordTypes\FunctionName.pas" />
     <Item Type="SourceFile" Name="WT: FunctionCall.pas" Path="WordTypes\FunctionCall.pas" />
     <Item Type="SourceFile" Name="WT: ConstantName.pas" Path="WordTypes\ConstantName.pas" />
     <Item Type="SourceFile" Name="WT: VariableName.pas" Path="WordTypes\VariableName.pas" />
