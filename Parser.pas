@@ -20,6 +20,7 @@ type
       begin
         if ProcedureName.IsProcedureName(s[i]) then Result[i] := new ProcedureName
         else if FunctionCall.IsFunctionCall(s[i]) then Result[i] := new FunctionCall
+        else if LibraryName.IsLibraryName(s[i]) then Result[i] := new LibraryName
         else if ConstantName.IsConstantName(s[i]) then Result[i] := new ConstantName
         else if IntegerLiteral.IsIntegerLiteral(s[i]) then Result[i] := new IntegerLiteral
         else if RealLiteral.IsRealLiteral(s[i]) then Result[i] := new RealLiteral
@@ -74,7 +75,7 @@ type
         
         if s[i] = '''' then
         begin
-          if not nestedfunc then if (not nested) then current += '''';
+          //if not nestedfunc then if (not nested) then current += '''';
           nested := not nested;
         end;
         if (not nested) and (s[i] = '$') then

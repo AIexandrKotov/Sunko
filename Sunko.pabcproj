@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project FileVersion="2" Name="Sunko" MainFile="Sunko.pas" OutputFileName="Sunko.exe" OutputDirectory="" ProjectType="ConsoleApp" IncludeDebugInfo="True" GenerateXMLDoc="False" CommandLineArguments="" AppIcon="" DeleteEXE="True" DeletePDB="True" Product="" Company="" Trademark="" Copyright="" Title="" Description="" MajorVersion="0" MinorVersion="0" BuildVersion="0" RevisionVersion="0">
+<Project FileVersion="2" Name="Sunko" MainFile="Sunko.pas" OutputFileName="Sunko.exe" OutputDirectory="" ProjectType="ConsoleApp" IncludeDebugInfo="True" GenerateXMLDoc="False" CommandLineArguments="" AppIcon="" DeleteEXE="False" DeletePDB="True" Product="" Company="" Trademark="" Copyright="" Title="" Description="" MajorVersion="0" MinorVersion="0" BuildVersion="0" RevisionVersion="0">
   <Items>
     <Item Type="SourceFile" Name="Sunko.pas" Path="Sunko.pas" />
     <Item Type="SourceFile" Name="WordType.pas" Path="WordTypes\WordType.pas" />
     <Item Type="SourceFile" Name="WT: Keyword.pas" Path="WordTypes\Keyword.pas" />
     <Item Type="SourceFile" Name="WT: ProcedureName.pas" Path="WordTypes\ProcedureName.pas" />
     <Item Type="SourceFile" Name="WT: FunctionCall.pas" Path="WordTypes\FunctionCall.pas" />
+    <Item Type="SourceFile" Name="WT: LibraryName.pas" Path="WordTypes\LibraryName.pas" />
     <Item Type="SourceFile" Name="WT: ConstantName.pas" Path="WordTypes\ConstantName.pas" />
     <Item Type="SourceFile" Name="WT: VariableName.pas" Path="WordTypes\VariableName.pas" />
     <Item Type="SourceFile" Name="WT: TypeName.pas" Path="WordTypes\TypeName.pas" />
@@ -21,6 +22,8 @@
     <Item Type="SourceFile" Name="SunkoError.pas" Path="SunkoError.pas" />
     <Item Type="SourceFile" Name="Tree.pas" Path="Tree.pas" />
     <Item Type="SourceFile" Name="SunkoVariable.pas" Path="SunkoVariable.pas" />
+    <Item Type="SourceFile" Name="Compiler.pas" Path="Compiler.pas" />
+    <Item Type="SourceFile" Name="Version.pas" Path="Version.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
   </Items>
 </Project>
