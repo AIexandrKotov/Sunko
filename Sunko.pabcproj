@@ -18,6 +18,9 @@
     <Item Type="SourceFile" Name="Operation.pas" Path="Operation.pas" />
     <Item Type="SourceFile" Name="Parser.pas" Path="Parser.pas" />
     <Item Type="SourceFile" Name="TestSuite.pas" Path="TestSuite.pas" />
+    <Item Type="SourceFile" Name="SunkoError.pas" Path="SunkoError.pas" />
+    <Item Type="SourceFile" Name="Tree.pas" Path="Tree.pas" />
+    <Item Type="SourceFile" Name="SunkoVariable.pas" Path="SunkoVariable.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
   </Items>
 </Project>

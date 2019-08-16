@@ -1,5 +1,7 @@
-﻿program Sunko;
-{$includenamespace TestSuite.pas}
+﻿
+
+program Sunko;
+{$includenamespace SunkoError.pas}
 
 
 
@@ -19,6 +21,10 @@
 
 {$includenamespace Operation.pas}
 {$includenamespace Parser.pas}
+{$includenamespace SunkoVariable.pas}
+{$includenamespace Tree.pas}
+{$includenamespace TestSuite.pas}
 begin
   TestSuite.Test;
+  var x := new Tree(ReadAllLines('All.snc'));
 end.

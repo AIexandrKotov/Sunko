@@ -8,30 +8,46 @@ type
     DestructionVariable = 16,
     ConditionOperator = 32,
     ElseOperator = 64,
-    ForCycleOpeator = 128,
+    ForCycleOperator = 128,
+    LoopCycleOperator = 129,
     WhileOperator = 256,
     RepeatOperator = 512,
     UntilOperator = 1024,
     EndOperator = 2048,
-    ProcedureCall = 4096
+    ProcedureCall = 4096,
+    SunkoOperator = 0,
+    ExitOperator = -2
   );
   
   Operation = class
     private fStrings: array of string;
     private fWordsTypes: array of WordType;
+    internal fOperationType: OperationType;
+    
+    internal fSource: integer;
+    
+    public property Source: integer read fSource write fSource;
     
     public property Strings: array of string read fStrings write fStrings;
     public property WordTypes: array of WordType read fWordsTypes write fWordsTypes;
+    public property OperationType: Sunko.OperationType read fOperationType;
     
     private static assignmenttypes := Arr(typeof(IntegerLiteral), typeof(StringLiteral), typeof(RealLiteral), typeof(DateLiteral), typeof(Expression), typeof(FunctionCall));
     
-    public function GetOperationType: OperationType;
+    public static function GetOperationType(x: Operation; disable: boolean): Sunko.OperationType;
     begin
-      //DeclareVariable
-      if Strings.Length = 2 then
+      if (x.WordTypes = nil) or (x.WordTypes.Length = 0) or (x.Strings = nil) or (x.Strings.Length = 0) then raise new SyntaxError('Empty string', x.source);
+      if (x.WordTypes[0] is Keyword) and (x.Strings[0] = 'sunko') then
       begin
-        if WordTypes[0] is TypeName then
-          if WordTypes[1] is VariableName then
+        Result := SunkoOperator;
+        exit;
+      end;
+      
+      //DeclareVariable
+      if x.Strings.Length = 2 then
+      begin
+        if x.WordTypes[0] is TypeName then
+          if x.WordTypes[1] is VariableName then
           begin
             Result := DeclareVariable;
             exit;
@@ -39,12 +55,12 @@ type
       end;
       
       //AssignmentVariable
-      if Strings.Length = 3 then
+      if x.Strings.Length = 3 then
       begin
-        if WordTypes[0] is VariableName then
-          if WordTypes[1] is Splitter then
+        if x.WordTypes[0] is VariableName then
+          if x.WordTypes[1] is Splitter then
           begin
-            if assignmenttypes.Contains(WordTypes[2].GetType) then
+            if assignmenttypes.Contains(x.WordTypes[2].GetType) then
             begin
               Result := AssignmentVariable;
               exit;
@@ -53,39 +69,57 @@ type
       end;
       
       //DeclareWithAssignment
-      if Strings.Length = 4 then
+      if x.Strings.Length = 4 then
       begin
-        if WordTypes[0] is TypeName then
-          if WordTypes[1] is VariableName then
-            if WordTypes[2] is Splitter then
+        if x.WordTypes[0] is TypeName then
+        begin
+          if x.WordTypes[1] is VariableName then
+            if x.WordTypes[2] is Splitter then
             begin
-              if assignmenttypes.Contains(WordTypes[3].GetType) then
+              if assignmenttypes.Contains(x.WordTypes[3].GetType) then
               begin
                 Result := DeclareWithAssignment;
                 exit;
               end;
             end;
+        end
+        else if x.WordTypes[0] is Keyword then
+        begin
+          if x.Strings[0] = 'for' then
+          begin
+            Result := ForCycleOperator;
+            exit;
+          end;
+        end;
       end;
       
       //DestructionVariable
-      if Strings.Length = 2 then
+      if x.Strings.Length = 2 then
       begin
-        if WordTypes[0] is KeyWord then
-          if Strings[0] = 'destruct' then
-            if WordTypes[1] is VariableName then
+        if x.WordTypes[0] is KeyWord then
+          if x.Strings[0] = 'destruct' then
+          begin
+            if x.WordTypes[1] is VariableName then
             begin
               Result := DestructionVariable;
               exit;
             end;
+          end
+          else
+          if x.Strings[0] = 'until' then
+          begin
+            Result := UntilOperator;
+            exit;
+          end;
       end;
       
       //ConditionOperator
-      if Strings.Length = 3 then
+      if x.Strings.Length = 3 then
       begin
-        if WordTypes[0] is KeyWord then
-          if Strings[0] = 'if' then
-            if (WordTypes[2] is Keyword) and (Strings[2] = 'then') then
-              if WordTypes[1] is Expression then
+        if x.WordTypes[0] is KeyWord then
+          if x.Strings[0] = 'if' then
+            if (x.WordTypes[2] is Keyword) and (x.Strings[2] = 'then') then
+              if x.WordTypes[1] is Expression then
               begin
                 Result := ConditionOperator;
                 exit;
@@ -93,15 +127,62 @@ type
       end;
       
       //ElseOperator
-      if Strings.Length = 1 then
+      if x.Strings.Length = 1 then
       begin
-        if (WordTypes[0] is Keyword) and (Strings[0] = 'else') then
+        if (x.WordTypes[0] is Keyword) and (x.Strings[0] = 'else') then
         begin
           Result := ElseOperator;
           exit;
         end;
+        
+        if (x.WordTypes[0] is Keyword) then
+        begin
+          if x.Strings[0] = 'end' then
+          begin
+            Result := EndOperator;
+            exit;
+          end;
+          if x.Strings[0] = 'exit' then
+          begin
+            Result := ExitOperator;
+            exit;
+          end;
+          if x.Strings[0] = 'repeat' then
+          begin
+            Result := RepeatOperator;
+            exit;
+          end;
+        end;
       end;
+      
+      //LoopOperator
+      if x.Strings.Length = 3 then
+      begin
+        if (x.WordTypes[0] is KeyWord) and (x.WordTypes[2] is KeyWord)  then
+        begin
+          if (x.Strings[0] = 'loop') and (x.Strings[2] = 'do') then
+          begin
+            Result := LoopCycleOperator;
+            exit;
+          end;
+          if (x.Strings[0] = 'while') and (x.Strings[2] = 'do') then
+          begin
+            Result := WhileOperator;
+            exit;
+          end;
+        end;
+      end;
+      
+      if x.WordTypes[0] is ProcedureName then
+      begin
+        Result := ProcedureCall;
+        exit;
+      end;
+      
+      if not disable then raise new SemanticError('Construction not found', x.fSource);
     end;
+    
+    public static function GetOperationType(x: Operation) := GetOperationType(x, false);
   end;
 
 end.

@@ -4,7 +4,13 @@ type
   Parser = static class
     public static procedure WhiteSpacesVisitor(var s: string);
     begin
-      s := s.TrimStart(' ', #7, #10, #13);
+      s := s.TrimStart(' ', #9, #10, #13);
+    end;
+    
+    public static procedure WhiteSpacesVisitor(var s: array of string);
+    begin
+      for var i := 0 to s.Length - 1 do
+        WhiteSpacesVisitor(s[i]);
     end;
     
     public static function WordTypes(s: array of string): array of WordType;
@@ -30,10 +36,11 @@ type
       end;
     end;
     
-    public static function Parse(s: string): Operation;
+    public static function Parse(s: string; disable: boolean; source: integer): Operation;
     begin
       WhiteSpacesVisitor(s);
       Result := new Operation;
+      Result.Source := source;
       var words := new List<string>;
       var current := new StringBuilder;
       var nested := false;
@@ -51,8 +58,8 @@ type
             words += current.ToString;
             current.Clear;
           end
-          else if s[i] <> ' ' then current += s[i];
-          if s[i] = '=' then
+          else if s[i] <> ' ' then current += s[i].ToLower
+          else if s[i] = '=' then
           begin
             if current.Length > 0 then
             begin
@@ -81,7 +88,12 @@ type
       
       Result.Strings := words.ToArray;
       Result.WordTypes := WordTypes(Result.Strings);
+      Result.fOperationType := Operation.GetOperationType(Result, disable);
     end;
+    
+    public static function Parse(s: string; source: integer) := Parse(s, false, source);
+    
+    public static function Parse(s: string) := Parse(s, 0);
   end;
 
 end.
