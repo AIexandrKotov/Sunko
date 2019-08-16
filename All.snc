@@ -19,7 +19,9 @@ sunko KTX
 	//Вывод на экран
 	!write x
 	//удаление переменной
-	delete x
+	destruct x
+	//Чтение клавиши и сохранение её значения
+	!readkey x
 	
 	//циклы
 	loop 10 do
@@ -35,7 +37,7 @@ sunko KTX
 	until (1 = 1)
 	
 	//i инициализируется по ходу
-	for (i, 1, 10)
+	for i 1 10
 		!write i
 	end
 	
