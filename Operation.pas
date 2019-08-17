@@ -16,7 +16,9 @@ type
     EndOperator = 2048,
     ProcedureCall = 4096,
     SunkoOperator = 0,
-    ExitOperator = -2
+    ExitOperator = -2,
+    LabelDefinition = -4,
+    GotoDefinition = -8
   );
   
   Operation = class
@@ -41,17 +43,6 @@ type
       begin
         Result := SunkoOperator;
         exit;
-      end;
-      
-      //DeclareVariable
-      if x.Strings.Length = 2 then
-      begin
-        if x.WordTypes[0] is TypeName then
-          if x.WordTypes[1] is VariableName then
-          begin
-            Result := DeclareVariable;
-            exit;
-          end;
       end;
       
       //AssignmentVariable
@@ -96,8 +87,14 @@ type
       //DestructionVariable
       if x.Strings.Length = 2 then
       begin
+        if x.WordTypes[0] is TypeName then
+          if x.WordTypes[1] is VariableName then
+          begin
+            Result := DeclareVariable;
+            exit;
+          end;
         if x.WordTypes[0] is KeyWord then
-          if x.Strings[0] = 'destruct' then
+          if x.Strings[0] = 'null' then
           begin
             if x.WordTypes[1] is VariableName then
             begin
@@ -109,6 +106,22 @@ type
           if x.Strings[0] = 'until' then
           begin
             Result := UntilOperator;
+            exit;
+          end
+          else
+          if x.Strings[0] = 'label' then
+          begin
+            if x.WordTypes[1] is IntegerLiteral then
+            begin
+              Result := LabelDefinition;
+              exit;
+            end
+            else new SyntaxError('WRONG_LABEL_DEFINE', x.fSource);
+          end
+          else
+          if x.Strings[0] = 'goto' then
+          begin
+            Result := GotoDefinition;
             exit;
           end;
       end;
@@ -179,7 +192,7 @@ type
         exit;
       end;
       
-      if not disable then raise new SyntaxError('Construction not found', x.fSource);
+      if not disable then raise new SyntaxError('CONSTRUCTION_NOT_FOUND', x.fSource);
     end;
     
     public static function GetOperationType(x: Operation) := GetOperationType(x, false);

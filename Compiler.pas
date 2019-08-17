@@ -124,6 +124,128 @@ type
       t.Variables[varname].Value := GetLiteralValue(literaltype, literal);
     end;
     
+    public static procedure DeclarationAndAssignment(var t: Tree; o: Operation; nested: integer);
+    begin
+      case o.OperationType of
+        DeclareVariable:
+        begin
+          var typename := o.Strings[0];
+          var vname := o.Strings[1];
+          
+          if t.Variables.ContainsKey(vname) then raise new SemanticError($'VARIABLE_ALREADY_DECLARED', t.Source, vname);
+          
+          DeclarationDefinition(t, vname, typename, nested);
+        end;
+        
+        AssignmentVariable:
+        begin
+          var vname := o.Strings[0];
+          if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
+          if Isliteral(o.WordTypes[2]) then
+          begin
+            AssignmentDefinitionLiteral(t, vname, o.Strings[2], o.WordTypes[2]);
+          end
+          else
+          match o.WordTypes[2] with
+            VariableName(var rightvar):
+            begin
+              var vname2 := o.Strings[2];
+              if not t.Variables.ContainsKey(vname2) then raise new SemanticError('VARIABLE_NOT_FOUND', t.Source, vname2);
+              var type1 := GetObjectType(t.Variables[vname2].Value);
+              var type2 := GetObjectType(t.Variables[vname2].Value);
+              if type1 <> type2 then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, type1, type2);
+              AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
+            end;
+            Expression(var exp):
+            begin
+              var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, o.Strings[2]));
+              var exprtype := GetObjectType(expr);
+              if exprtype = 'bool' then
+              begin
+                expr := object(integer(boolean(expr) ? 1 : 0));
+                exprtype := 'int';
+              end;
+              if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
+              AssignmentDefinitionValue(t, vname, expr);
+            end;
+          end;
+        end;
+        
+        DeclareWithAssignment:
+        begin
+          var vtype := o.Strings[0];
+          var vname := o.Strings[1];
+          
+          if t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_ALREADY_DECLARED', t.Source, vname);
+          
+          if Isliteral(o.WordTypes[3]) then
+          begin
+            DeclarationDefinition(t, vname, vtype, nested);
+            AssignmentDefinitionLiteral(t, vname, o.Strings[3], o.WordTypes[3]);
+          end
+          else
+          match o.WordTypes[3] with
+            VariableName(var rightvar):
+            begin
+              DeclarationDefinition(t, vname, vtype, nested);
+              var vname2 := o.Strings[3];
+              if not t.Variables.ContainsKey(vname2) then raise new SemanticError('VARIABLE_NOT_FOUND', t.Source, vname2);
+              var type1 := GetObjectType(t.Variables[vname2].Value);
+              var type2 := GetObjectType(t.Variables[vname2].Value);
+              if type1 <> type2 then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, type1, type2);
+              AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
+            end;
+            Expression(var exp):
+            begin
+              DeclarationDefinition(t, vname, vtype, nested);
+              var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, o.Strings[3]));
+              var exprtype := GetObjectType(expr);
+              if exprtype = 'bool' then
+              begin
+                expr := object(integer(boolean(expr) ? 1 : 0));
+                exprtype := 'int';
+              end;
+              if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
+              AssignmentDefinitionValue(t, vname, expr);
+            end;
+            else raise new SemanticError('NOT_SUPPORTED', t.Source);
+          end;
+        end;
+        
+        DestructionVariable:
+        begin
+          if not t.Variables.ContainsKey(o.Strings[1]) then raise new SemanticError('DESTRUCTION_NONDECLARED_VARIABLE', t.Source, o.Strings[1]);
+          t.Variables.Remove(o.Strings[1]);
+        end;
+      end;
+    end;
+    
+    public static procedure RecalculateNestedBetween(var t: Tree; var nested: integer; _sunko, _end: integer);
+    begin
+      if _sunko < _end then
+      begin
+        for var i := _sunko + 1 to _end - 1 do
+        begin
+          if Tree.increments.Contains(t.Operations[i].OperationType) then nested += 1;
+          if t.Operations[i].OperationType = EndOperator then nested -= 1;
+          DeclarationAndAssignment(t, t.Operations[i], nested);
+        end;
+      end
+      else
+      begin
+        for var i := _end - 1 downto _sunko + 1 do
+        begin
+          if Tree.increments.Contains(t.Operations[i].OperationType) then nested += 1;
+          if t.Operations[i].OperationType = EndOperator then nested -= 1;
+          DeclarationAndAssignment(t, t.Operations[i], nested);
+        end;
+      end;
+      foreach var x in t.Variables.Keys.ToArray do
+      begin
+        if t.Variables[x].NestedLevel > nested then t.Variables.Remove(x);
+      end;
+    end;
+    
     public static procedure Compile(t: Tree);
     begin
       var currentnestedlevel := -1;
@@ -139,94 +261,28 @@ type
             i += 1;
           end;
           
-          DeclareVariable:
+          EndOperator:
           begin
-            var typename := t.Operations[i].Strings[0];
-            var vname := t.Operations[i].Strings[1];
-            
-            if t.Variables.ContainsKey(vname) then raise new SemanticError($'VARIABLE_ALREADY_DECLARED', t.Source, vname);
-            
-            DeclarationDefinition(t, vname, typename, currentnestedlevel);
+            currentnestedlevel -= 1;
+            foreach var x in t.Variables.Keys.ToArray do
+            begin
+              if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+            end;
             i += 1;
           end;
           
-          AssignmentVariable:
+          DeclareVariable, AssignmentVariable, DeclareWithAssignment, DestructionVariable:
           begin
-            var vname := t.Operations[i].Strings[0];
-            if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
-            if Isliteral(t.Operations[i].WordTypes[2]) then
-            begin
-              AssignmentDefinitionLiteral(t, vname, t.Operations[i].Strings[2], t.Operations[i].WordTypes[2]);
-            end
-            else
-            match t.Operations[i].WordTypes[2] with
-              VariableName(var rightvar):
-              begin
-                var vname2 := t.Operations[i].Strings[2];
-                if not t.Variables.ContainsKey(vname2) then raise new SemanticError('VARIABLE_NOT_FOUND', t.Source, vname2);
-                var type1 := GetObjectType(t.Variables[vname2].Value);
-                var type2 := GetObjectType(t.Variables[vname2].Value);
-                if type1 <> type2 then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, type1, type2);
-                AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
-              end;
-              Expression(var exp):
-              begin
-                var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[2]));
-                var exprtype := GetObjectType(expr);
-                if exprtype = 'bool' then
-                begin
-                  expr := object(integer(boolean(expr) ? 1 : 0));
-                  exprtype := 'int';
-                end;
-                if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
-                AssignmentDefinitionValue(t, vname, expr);
-              end;
-            end;
-            
+            DeclarationAndAssignment(t, t.Operations[i], currentnestedlevel);
             i += 1;
           end;
           
-          DeclareWithAssignment:
+          GotoDefinition:
           begin
-            var vtype := t.Operations[i].Strings[0];
-            var vname := t.Operations[i].Strings[1];
-            
-            if t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_ALREADY_DECLARED', t.Source, vname);
-            
-            if Isliteral(t.Operations[i].WordTypes[3]) then
-            begin
-              DeclarationDefinition(t, vname, vtype, currentnestedlevel);
-              AssignmentDefinitionLiteral(t, vname, t.Operations[i].Strings[3], t.Operations[i].WordTypes[3]);
-            end
-            else
-            match t.Operations[i].WordTypes[3] with
-              VariableName(var rightvar):
-              begin
-                DeclarationDefinition(t, vname, vtype, currentnestedlevel);
-                var vname2 := t.Operations[i].Strings[3];
-                if not t.Variables.ContainsKey(vname2) then raise new SemanticError('VARIABLE_NOT_FOUND', t.Source, vname2);
-                var type1 := GetObjectType(t.Variables[vname2].Value);
-                var type2 := GetObjectType(t.Variables[vname2].Value);
-                if type1 <> type2 then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, type1, type2);
-                AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
-              end;
-              Expression(var exp):
-              begin
-                DeclarationDefinition(t, vname, vtype, currentnestedlevel);
-                var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[3]));
-                var exprtype := GetObjectType(expr);
-                if exprtype = 'bool' then
-                begin
-                  expr := object(integer(boolean(expr) ? 1 : 0));
-                  exprtype := 'int';
-                end;
-                if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
-                AssignmentDefinitionValue(t, vname, expr);
-              end;
-              else raise new SemanticError('NOT_SUPPORTED', t.Source);
-            end;
-            
-            i += 1;
+            var labelkey := t.Operations[i].Strings[1].ToInteger;
+            if not t.Labels.ContainsKey(labelkey) then raise new SemanticError('LABEL_NOT_DECLARED', t.Source, labelkey.ToString);
+            RecalculateNestedBetween(t, currentnestedlevel, i, t.Labels[labelkey]);
+            i := t.Labels[labelkey];
           end;
           
           else i += 1;
@@ -237,7 +293,9 @@ type
     public static function Compile(fname: string): integer;
     begin
       var t := ReadAllLines(fname);
-      Compile(new Tree(t));
+      var tr := new Tree(t);
+      Tree.SyntaxVisitor(tr);
+      Compile(tr);
       Result := t.Length;
     end;
   end;

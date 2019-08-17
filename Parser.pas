@@ -13,6 +13,41 @@ type
         WhiteSpacesVisitor(s[i]);
     end;
     
+    public static procedure CommentVisitor(var s: string);
+    begin
+      if '//' in s then
+      begin
+        var c := 0;
+        var sb := new StringBuilder;
+        for var i := 1 to s.Length do
+        begin
+          if s[i] = '/' then
+          begin
+            if c = 1 then
+            begin
+              break;
+            end else
+            begin
+              c += 1;
+              if s[i + 1] <> '/' then sb += s[i];
+            end;
+          end
+          else
+          begin
+            c := 0;
+            sb += s[i];
+          end;
+        end;
+        s := sb.ToString;
+      end;
+    end;
+    
+    public static procedure CommentVisitor(var s: array of string);
+    begin
+      for var i := 0 to s.Length - 1 do
+        CommentVisitor(s[i]);
+    end;
+    
     public static function GetString(self: string; delim: char): string;
     begin
       if self.Contains(delim) then
@@ -100,7 +135,7 @@ type
         if s[i] = '(' then nestedbracket += 1;
         if s[i] = ')' then nestedbracket -= 1;
       end;
-      if current.Length <> 0 then words += current.ToString;
+      if (current.Length <> 0) and (not string.IsNullOrWhiteSpace(current.ToString)) then words += current.ToString;
       
       Result.Strings := words.ToArray;
       Result.WordTypes := WordTypes(Result.Strings);

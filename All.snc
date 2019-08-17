@@ -2,7 +2,7 @@
 	date x
 	x = $currenttime$
 	!write x
-	destruct x
+	null x
 	loop 10 do
 		!write 0
 	end
