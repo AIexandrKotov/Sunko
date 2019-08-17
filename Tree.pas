@@ -22,7 +22,8 @@ type
     
     public procedure CurrentOperation(op: integer) := fSource := Operations[op].Source;
     
-    public static increments := new OperationType[](SunkoOperator, WhileOperator, ForCycleOperator, LoopCycleOperator, RepeatOperator);
+    public static increments := new OperationType[](SunkoOperator, WhileOperator, ForCycleOperator, LoopCycleOperator, RepeatOperator, ConditionOperator);
+    public static decrements := new OperationType[](EndOperator, UntilOperator);
     
     public static procedure NestedsVisitor(var t: Tree);
     begin
@@ -30,7 +31,7 @@ type
       for var i := 0 to t.fOperations.Length - 1 do
       begin
         if increments.Contains(t.fOperations[i].OperationType) then nested += 1;
-        if t.fOperations[i].OperationType = EndOperator then nested -= 1;
+        if decrements.Contains(t.fOperations[i].OperationType) then nested -= 1;
       end;
       if nested <> 0 then raise new SyntaxError('WRONG_STRUCTURE', 0);
     end;

@@ -227,7 +227,7 @@ type
         for var i := _sunko + 1 to _end - 1 do
         begin
           if Tree.increments.Contains(t.Operations[i].OperationType) then nested += 1;
-          if t.Operations[i].OperationType = EndOperator then nested -= 1;
+          if Tree.decrements.Contains(t.Operations[i].OperationType) then nested -= 1;
           DeclarationAndAssignment(t, t.Operations[i], nested);
         end;
       end
@@ -236,7 +236,7 @@ type
         for var i := _end - 1 downto _sunko + 1 do
         begin
           if Tree.increments.Contains(t.Operations[i].OperationType) then nested += 1;
-          if t.Operations[i].OperationType = EndOperator then nested -= 1;
+          if Tree.decrements.Contains(t.Operations[i].OperationType) then nested -= 1;
           DeclarationAndAssignment(t, t.Operations[i], nested);
         end;
       end;
@@ -246,10 +246,45 @@ type
       end;
     end;
     
+    public static function FindNextElseOnThisNestedLevel(var t: Tree; from: integer; nested: integer): integer;
+    begin
+      Result := 0;
+      var curnested := nested;
+      for var i := from + 1 to t.Operations.Length - 1 do
+      begin
+        if t.Operations[i].OperationType = ElseOperator then
+          if curnested = nested then
+          begin
+            Result := i;
+            break;
+          end;
+        if Tree.decrements.Contains(t.Operations[i].OperationType) then curnested -= 1;
+        if Tree.increments.Contains(t.Operations[i].OperationType) then curnested += 1;
+      end;
+    end;
+    
+    public static function FindNextEndOnThisNestedLevel(var t: Tree; from: integer; nested: integer): integer;
+    begin
+      var curnested := nested;
+      for var i := from + 1 to t.Operations.Length - 1 do
+      begin
+        if t.Operations[i].OperationType = EndOperator then
+          if curnested = nested then
+          begin
+            Result := i;
+            break;
+          end;
+        if Tree.decrements.Contains(t.Operations[i].OperationType) then curnested -= 1;
+        if Tree.increments.Contains(t.Operations[i].OperationType) then curnested += 1;
+      end;
+    end;
+    
     public static procedure Compile(t: Tree);
     begin
       var currentnestedlevel := -1;
       var i := 0;
+      var elseskipstack := new Stack<integer>;
+      var elsereturnstack := new Stack<integer>;
       while i < t.Operations.Length - 1 do
       begin
         t.CurrentOperation(i);
@@ -283,6 +318,130 @@ type
             if not t.Labels.ContainsKey(labelkey) then raise new SemanticError('LABEL_NOT_DECLARED', t.Source, labelkey.ToString);
             RecalculateNestedBetween(t, currentnestedlevel, i, t.Labels[labelkey]);
             i := t.Labels[labelkey];
+          end;
+          
+          ConditionOperator:
+          begin
+            currentnestedlevel += 1;
+            var elselabel := FindNextElseOnThisNestedLevel(t, i, currentnestedlevel);
+            var endlabel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
+            var bool := false;
+            
+            match t.Operations[i].WordTypes[1] with
+              Expression(var exp):
+              begin
+                var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[1]));
+                var exprtype := GetObjectType(expr);
+                if exprtype = 'bool' then
+                begin
+                  bool := boolean(expr);
+                end
+                else if exprtype <> 'int' then
+                begin
+                  bool := integer(expr) <> 0;
+                end
+                else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, 'int');
+              end;
+              VariableName(var __vname):
+              begin
+                var vname := t.Operations[i].Strings[1];
+                if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
+                var tp := GetObjectType(t.Variables[vname].Value);
+                if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
+                bool := integer(t.Variables[vname].Value) <> 0;
+              end;
+              IntegerLiteral(var int):
+              begin
+                bool := t.Operations[i].Strings[1].ToInteger <> 0;
+              end;
+              FunctionCall(var fcall):
+              begin
+                raise new SemanticError('NOT_SUPPORTED', t.Source);
+              end;
+            end;
+            if elselabel <> 0 then
+            begin
+              if not bool then i := elselabel else
+              begin
+                elseskipstack += elselabel;
+                elsereturnstack += endlabel;
+              end;
+            end
+            else if not bool then i := endlabel;
+            if bool then i += 1;
+          end;
+          
+          ProcedureCall:
+          begin
+            if t.Operations[i].Strings[0] = '!write' then
+            begin
+              if Isliteral(t.Operations[i].WordTypes[1]) then
+              begin
+                if t.Operations[i].WordTypes[1] is StringLiteral then write(Parser.GetString(t.Operations[i].Strings[1])) else write(t.Operations[i].Strings[1]);
+              end else
+              match t.Operations[i].WordTypes[1] with
+                VariableName(var __vname):
+                begin
+                  var vname := t.Operations[i].Strings[1];
+                  if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
+                  write(t.Variables[vname].Value.ToString);
+                end;
+                Expression(var exp):
+                begin
+                  var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[1]));
+                  write(expr.ToString);
+                end;
+              end;
+            end;
+            
+            if t.Operations[i].Strings[0] = '!writeln' then
+            begin
+              if t.Operations[i].WordTypes.Length > 1 then
+              begin
+                if Isliteral(t.Operations[i].WordTypes[1]) then
+                begin
+                  if t.Operations[i].WordTypes[1] is StringLiteral then write(Parser.GetString(t.Operations[i].Strings[1])) else writeln(t.Operations[i].Strings[1]);
+                end else
+                match t.Operations[i].WordTypes[1] with
+                  VariableName(var __vname):
+                  begin
+                    var vname := t.Operations[i].Strings[1];
+                    if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
+                    writeln(t.Variables[vname].Value.ToString);
+                  end;
+                  Expression(var exp):
+                  begin
+                    var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[1]));
+                    writeln(expr.ToString);
+                  end;
+                end;
+              end
+              else writeln;
+            end;
+              
+            if t.Operations[i].Strings[0] = '!stopkey' then
+            begin
+              System.Console.ReadKey(true);
+            end;
+            i += 1;
+          end;
+          
+          ElseOperator:
+          begin
+            if (elseskipstack.Count > 0) and (i = elseskipstack.Peek) then
+            begin
+              elseskipstack.Pop;
+              i := elsereturnstack.Pop;
+            end
+            else
+            begin
+              foreach var x in t.Variables.Keys.ToArray do
+              begin
+                if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+              end;
+              i += 1;
+            end;
+            
           end;
           
           else i += 1;

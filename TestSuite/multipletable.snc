@@ -1,0 +1,20 @@
+//Полноценная таблица умножения на Sunko!
+sunko
+	int i = 1
+	int j = 1
+	label 100
+	if (i <= 10) then
+		j = 1
+		label 101
+		if (j <= 10) then
+			!write (i * j)
+			!write ' '
+			j = (j + 1)
+			goto 101
+		end
+		i = (i + 1)
+		!writeln
+		goto 100
+	end
+	!stopkey
+end

@@ -1,0 +1,9 @@
+sunko
+	int true = 1
+	if true then
+		!write 'true1'
+		true = 0
+	else
+		!write 'false1'
+	end
+end

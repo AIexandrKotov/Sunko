@@ -1,8 +1,9 @@
 sunko
-	sunko
-		goto 0
-		int j = 0
-		label 0
-		int i = j
-	end  //comment
+	label 1
+	
+	int x = 1
+	!write x
+	goto 1
+	
+	!write x
 end

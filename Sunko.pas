@@ -102,6 +102,7 @@ begin
 end;
 
 begin
+  Console.Title := 'Sunko Script';
   ErrorResources.Init;
   if (PABCSystem.CommandLineArgs <> nil) and (PABCSystem.CommandLineArgs.Length > 0) then
   begin

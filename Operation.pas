@@ -35,6 +35,7 @@ type
     public property OperationType: Sunko.OperationType read fOperationType;
     
     private static assignmenttypes := Arr(typeof(IntegerLiteral), typeof(StringLiteral), typeof(RealLiteral), typeof(DateLiteral), typeof(Expression), typeof(FunctionCall), typeof(VariableName));
+    private static conditiontypes := Arr(typeof(IntegerLiteral), typeof(Expression), typeof(FunctionCall), typeof(VariableName));
     
     public static function GetOperationType(x: Operation; disable: boolean): Sunko.OperationType;
     begin
@@ -132,7 +133,7 @@ type
         if x.WordTypes[0] is KeyWord then
           if x.Strings[0] = 'if' then
             if (x.WordTypes[2] is Keyword) and (x.Strings[2] = 'then') then
-              if x.WordTypes[1] is Expression then
+              if conditiontypes.Contains(x.WordTypes[1].GetType) then
               begin
                 Result := ConditionOperator;
                 exit;

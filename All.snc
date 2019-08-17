@@ -18,7 +18,6 @@
 	int b = 1
 	if (b = 1) then
 		!writeln 'b is 1'
-	end
 	else
 		!writeln 'b is 0'
 	end
