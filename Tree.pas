@@ -10,8 +10,11 @@ type
     
     private fSource: integer;
     
+    private fLibraries: array of string;
+    
     public property Variables: Dictionary<string, SunkoVariable> read fVariables write fVariables;
     public property Operations: array of Operation read fOperations write fOperations;
+    public property Libraries: array of string read fLibraries write fLibraries;
     public property Source: integer read fSource;
     
     public procedure CurrentOperation(op: integer) := fSource := Operations[op].Source;

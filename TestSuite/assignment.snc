@@ -1,5 +1,3 @@
 sunko
-	real a1
-	int a
-	a = a1
+	int a = 22
 end
