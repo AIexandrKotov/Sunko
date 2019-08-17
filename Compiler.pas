@@ -171,7 +171,7 @@ type
               end;
               Expression(var exp):
               begin
-                var expr := GetExpressionValue(t, t.Operations[i].Strings[2]);
+                var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[2]));
                 var exprtype := GetObjectType(expr);
                 if exprtype = 'bool' then
                 begin
@@ -213,7 +213,7 @@ type
               Expression(var exp):
               begin
                 DeclarationDefinition(t, vname, vtype, currentnestedlevel);
-                var expr := GetExpressionValue(t, t.Operations[i].Strings[3]);
+                var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[3]));
                 var exprtype := GetObjectType(expr);
                 if exprtype = 'bool' then
                 begin
@@ -223,6 +223,7 @@ type
                 if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'Cannot convert {exprtype} to {vtype}', t.Source);
                 AssignmentDefinitionValue(t, vname, expr);
               end;
+              else raise new SemanticError('This construct is not supported by the current compiler version', t.Source);
             end;
             
             i += 1;

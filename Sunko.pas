@@ -97,9 +97,9 @@ begin
       on e: System.ArgumentException do WriteLnColor(ConsoleColor.Yellow, 'Compiler: Path contains invalid chars');
       on e: System.UnauthorizedAccessException do WritelnColor(ConsoleColor.Yellow, 'Compiler: Wrong command!');
       on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
-      on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'Error: {e.Message}');
-      on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'Error: {e.Message}');
-      on e: SunkoError do writelnColor(ConsoleColor.Red, $'Undefined Compiler Error: {e}');
+      on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.Message}');
+      on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.Message}');
+      on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{e.Source}]Undefined Compiler Error: {e}');
       on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
     end;
   end;
