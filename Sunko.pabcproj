@@ -25,5 +25,6 @@
     <Item Type="SourceFile" Name="Compiler.pas" Path="Compiler.pas" />
     <Item Type="SourceFile" Name="Version.pas" Path="Version.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
+    <Item Type="Reference" AssemblyName="System.Data" FullAssemblyName="System.Data.dll" />
   </Items>
 </Project>

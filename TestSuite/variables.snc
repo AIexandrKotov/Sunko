@@ -1,0 +1,6 @@
+sunko
+	int a
+	string s
+	date d
+	real r
+end

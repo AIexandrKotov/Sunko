@@ -13,6 +13,21 @@ type
         WhiteSpacesVisitor(s[i]);
     end;
     
+    public static function GetString(self: string; delim: char): string;
+    begin
+      if self.Contains(delim) then
+      begin
+        var a, b: integer;
+        a := self.IndexOf(delim);
+        b := self.LastIndexOf(delim);
+        Result := Copy(self, a+2, b-a-1);
+      end else Result := self;
+    end;
+    
+    public static function GetString(self: string) := GetString(self, '''');
+    
+    public static function GetFunction(self: string) := GetString(self, '$');
+    
     public static function WordTypes(s: array of string): array of WordType;
     begin
       Result := new WordType[s.Length];

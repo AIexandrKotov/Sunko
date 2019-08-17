@@ -179,7 +179,7 @@ type
         exit;
       end;
       
-      if not disable then raise new SemanticError('Construction not found', x.fSource);
+      if not disable then raise new SyntaxError('Construction not found', x.fSource);
     end;
     
     public static function GetOperationType(x: Operation) := GetOperationType(x, false);

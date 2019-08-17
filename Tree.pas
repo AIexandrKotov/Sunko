@@ -8,12 +8,18 @@ type
     
     private fOperations: array of Operation;
     
+    private fSource: integer;
+    
+    public property Variables: Dictionary<string, SunkoVariable> read fVariables write fVariables;
     public property Operations: array of Operation read fOperations write fOperations;
+    public property Source: integer read fSource;
+    
+    public procedure CurrentOperation(op: integer) := fSource := Operations[op].Source;
     
     public constructor(ss: array of string);
     begin
       var ops := new List<Operation>;
-      var fVariables := new Dictionary<string, SunkoVariable>;
+      fVariables := new Dictionary<string, SunkoVariable>;
       
       Parser.WhiteSpacesVisitor(ss);
       for var i := 0 to ss.Length - 1 do

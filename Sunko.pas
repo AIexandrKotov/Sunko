@@ -67,6 +67,11 @@ begin
   WritelnColor(ConsoleColor.Magenta, 'Insert the command and press Enter!');
 end;
 
+function ExecuteCommand(s: string): boolean;
+begin
+  Result := false;
+end;
+
 begin
   if TestSuite.Test then writeln(TestSuite.Stack.JoinIntoString(newline))
   else
@@ -81,6 +86,20 @@ begin
   while true do
   begin
     var s := ReadlnString;
-    var x := new Tree(ReadAllLines(s));
+    try
+      if not string.IsNullOrWhiteSpace(s) then
+      if (not s.StartsWith('!')) and (s <> '.') then Compiler.Compile(Parser.GetString(s)) else
+      begin
+        if not ExecuteCommand(s) then raise new System.UnauthorizedAccessException;
+      end;
+    except
+      on e: System.ArgumentException do WriteLnColor(ConsoleColor.Yellow, 'Compiler: Path contains invalid chars');
+      on e: System.UnauthorizedAccessException do WritelnColor(ConsoleColor.Yellow, 'Compiler: Wrong command!');
+      on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
+      on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'Semantic Error: {e.Message}');
+      on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'Syntax Compiler Error: {e.Message}');
+      on e: SunkoError do writelnColor(ConsoleColor.Red, $'Undefined Compiler Error: {e}');
+      on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
+    end;
   end;
 end.
