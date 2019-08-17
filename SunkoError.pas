@@ -3,7 +3,7 @@
 type
   ErrorResources = static class
     private static files := Arr('ru.lng', 'en.lng');
-    private static fLang := 1;
+    private static fLang := 0;
     private static langs: array of Dictionary<string, string>;
     
     public static property Lang: integer read fLang write fLang;
