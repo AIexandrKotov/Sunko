@@ -1,0 +1,5 @@
+CANNOT_CONVERT_TYPES=Cannot convert {0} to {1}
+VARIABLE_ALREADY_DECLARED=The variable '{0}' is already declared
+VARIABLE_NOT_FOUND=The variable '{0}' was not found
+VARIABLE_NOT_DECLARED=The variable '{0}' is not declared
+NOT_SUPPORTED=This construct is not supported by the current Sunko version

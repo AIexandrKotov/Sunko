@@ -120,7 +120,7 @@ type
     public static procedure AssignmentDefinitionLiteral(var t: Tree; varname: string; literal: string; literaltype: WordType);
     begin
       var littypestr := GetLiteralType(literaltype);
-      if t.Variables[varname].SunkoType <> littypestr then raise new SemanticError($'Cannot convert {littypestr} to {t.Variables[varname].SunkoType}', t.Source);
+      if t.Variables[varname].SunkoType <> littypestr then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, littypestr, t.Variables[varname].SunkoType);
       t.Variables[varname].Value := GetLiteralValue(literaltype, literal);
     end;
     
@@ -144,7 +144,7 @@ type
             var typename := t.Operations[i].Strings[0];
             var vname := t.Operations[i].Strings[1];
             
-            if t.Variables.ContainsKey(vname) then raise new SemanticError($'The variable {vname} is already declared', t.Source);
+            if t.Variables.ContainsKey(vname) then raise new SemanticError($'VARIABLE_ALREADY_DECLARED', t.Source, vname);
             
             DeclarationDefinition(t, vname, typename, currentnestedlevel);
             i += 1;
@@ -153,7 +153,7 @@ type
           AssignmentVariable:
           begin
             var vname := t.Operations[i].Strings[0];
-            if not t.Variables.ContainsKey(vname) then raise new SemanticError($'The variable ''{vname}'' is not declared', t.Source);
+            if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
             if Isliteral(t.Operations[i].WordTypes[2]) then
             begin
               AssignmentDefinitionLiteral(t, vname, t.Operations[i].Strings[2], t.Operations[i].WordTypes[2]);
@@ -163,10 +163,10 @@ type
               VariableName(var rightvar):
               begin
                 var vname2 := t.Operations[i].Strings[2];
-                if not t.Variables.ContainsKey(vname2) then raise new SemanticError($'The variable ''{vname2}'' was not found', t.Source);
+                if not t.Variables.ContainsKey(vname2) then raise new SemanticError('VARIABLE_NOT_FOUND', t.Source, vname2);
                 var type1 := GetObjectType(t.Variables[vname2].Value);
                 var type2 := GetObjectType(t.Variables[vname2].Value);
-                if type1 <> type2 then raise new SemanticError($'Cannot convert {type1} to {type2}', t.Source);
+                if type1 <> type2 then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, type1, type2);
                 AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
               end;
               Expression(var exp):
@@ -178,7 +178,7 @@ type
                   expr := object(integer(boolean(expr) ? 1 : 0));
                   exprtype := 'int';
                 end;
-                if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'Cannot convert {exprtype} to {t.Variables[vname].SunkoType}', t.Source);
+                if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
                 AssignmentDefinitionValue(t, vname, expr);
               end;
             end;
@@ -191,7 +191,7 @@ type
             var vtype := t.Operations[i].Strings[0];
             var vname := t.Operations[i].Strings[1];
             
-            if t.Variables.ContainsKey(vname) then raise new SemanticError($'The variable {vname} is already declared', t.Source);
+            if t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_ALREADY_DECLARED', t.Source, vname);
             
             if Isliteral(t.Operations[i].WordTypes[3]) then
             begin
@@ -204,10 +204,10 @@ type
               begin
                 DeclarationDefinition(t, vname, vtype, currentnestedlevel);
                 var vname2 := t.Operations[i].Strings[3];
-                if not t.Variables.ContainsKey(vname2) then raise new SemanticError($'The variable ''{vname2}'' was not found', t.Source);
+                if not t.Variables.ContainsKey(vname2) then raise new SemanticError('VARIABLE_NOT_FOUND', t.Source, vname2);
                 var type1 := GetObjectType(t.Variables[vname2].Value);
                 var type2 := GetObjectType(t.Variables[vname2].Value);
-                if type1 <> type2 then raise new SemanticError($'Cannot convert {type1} to {type2}', t.Source);
+                if type1 <> type2 then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, type1, type2);
                 AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
               end;
               Expression(var exp):
@@ -220,10 +220,10 @@ type
                   expr := object(integer(boolean(expr) ? 1 : 0));
                   exprtype := 'int';
                 end;
-                if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'Cannot convert {exprtype} to {vtype}', t.Source);
+                if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
                 AssignmentDefinitionValue(t, vname, expr);
               end;
-              else raise new SemanticError('This construct is not supported by the current compiler version', t.Source);
+              else raise new SemanticError('NOT_SUPPORTED', t.Source);
             end;
             
             i += 1;

@@ -1,6 +1,9 @@
 ﻿
 program Sunko;
 uses System;
+{$resource 'ru.lng'}
+{$resource 'en.lng'}
+
 {$includenamespace Version.pas}
 {$includenamespace SunkoError.pas}
 
@@ -83,7 +86,9 @@ begin
     {$endif}
   end;
   var ___x := new Tree(ReadAllLines('All.snc'));
+  ___x.ToString;
   WriteLogo;
+  ErrorResources.Init;
   while true do
   begin
     var s := ReadlnString;
@@ -97,8 +102,8 @@ begin
       on e: System.ArgumentException do WriteLnColor(ConsoleColor.Yellow, 'Compiler: Path contains invalid chars');
       on e: System.UnauthorizedAccessException do WritelnColor(ConsoleColor.Yellow, 'Compiler: Wrong command!');
       on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
-      on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.Message}');
-      on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.Message}');
+      on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
+      on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
       on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{e.Source}]Undefined Compiler Error: {e}');
       on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
     end;
