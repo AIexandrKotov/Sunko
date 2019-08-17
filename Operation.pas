@@ -32,7 +32,7 @@ type
     public property WordTypes: array of WordType read fWordsTypes write fWordsTypes;
     public property OperationType: Sunko.OperationType read fOperationType;
     
-    private static assignmenttypes := Arr(typeof(IntegerLiteral), typeof(StringLiteral), typeof(RealLiteral), typeof(DateLiteral), typeof(Expression), typeof(FunctionCall));
+    private static assignmenttypes := Arr(typeof(IntegerLiteral), typeof(StringLiteral), typeof(RealLiteral), typeof(DateLiteral), typeof(Expression), typeof(FunctionCall), typeof(VariableName));
     
     public static function GetOperationType(x: Operation; disable: boolean): Sunko.OperationType;
     begin
