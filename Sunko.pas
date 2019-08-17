@@ -70,42 +70,62 @@ begin
   WritelnColor(ConsoleColor.Magenta, 'Insert the command and press Enter!');
 end;
 
+function NonCommand(s: string): boolean := (not s.StartsWith('!')) and (s <> '.') and (s <> '/') and (s <> '\');
+
 function ExecuteCommand(s: string): boolean;
 begin
   if s.ToLower = '!exit' then System.Environment.Exit(0);
   Result := false;
 end;
 
+procedure Run(s: string);
 begin
-  if TestSuite.Test then writeln(TestSuite.Stack.JoinIntoString(newline))
+  try
+    if not string.IsNullOrWhiteSpace(s) then
+    if NonCommand(s) then
+    begin
+      var x := Compiler.Compile(Parser.GetString(s));
+      writelncolor(ConsoleColor.Green, ErrorResources.GetErrorResourceString(false, 'SUCCESS_COMPILATION', System.IO.Path.GetFileName(s), x.ToString));
+    end else
+    begin
+      if not ExecuteCommand(s) then raise new System.NullReferenceException($'Command {s} not found');
+    end;
+  except
+    on e: System.ArgumentException do WriteLnColor(ConsoleColor.Yellow, 'Compiler: Path contains invalid chars');
+    on e: System.NullReferenceException do WritelnColor(ConsoleColor.Yellow, 'Compiler: Wrong command!');
+    on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
+    on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
+    on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
+    on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{e.Source}]Undefined Compiler Error: {e}');
+    on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
+  end;
+end;
+
+begin
+  ErrorResources.Init;
+  if (PABCSystem.CommandLineArgs <> nil) and (PABCSystem.CommandLineArgs.Length > 0) then
+  begin
+    foreach var cla in CommandLineArgs do Run(cla);
+    writeln('Для выхода нажмите любую клавишу...');
+    Console.ReadKey;
+  end
   else
   begin
-    {$ifdef DEBUG}
-      Tree.fAllsnc := true;
-      writeln(TestSuite.Stack.JoinIntoString(newline))
-    {$endif}
-  end;
-  var ___x := new Tree(ReadAllLines('All.snc'));
-  ___x.ToString;
-  WriteLogo;
-  ErrorResources.Init;
-  while true do
-  begin
-    var s := ReadlnString;
-    try
-      if not string.IsNullOrWhiteSpace(s) then
-      if (not s.StartsWith('!')) and (s <> '.') then Compiler.Compile(Parser.GetString(s)) else
-      begin
-        if not ExecuteCommand(s) then raise new System.UnauthorizedAccessException;
-      end;
-    except
-      on e: System.ArgumentException do WriteLnColor(ConsoleColor.Yellow, 'Compiler: Path contains invalid chars');
-      on e: System.UnauthorizedAccessException do WritelnColor(ConsoleColor.Yellow, 'Compiler: Wrong command!');
-      on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
-      on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
-      on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
-      on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{e.Source}]Undefined Compiler Error: {e}');
-      on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
+    if TestSuite.Test then writeln(TestSuite.Stack.JoinIntoString(newline))
+    else
+    begin
+      {$ifdef DEBUG}
+        Tree.fAllsnc := true;
+        writeln(TestSuite.Stack.JoinIntoString(newline))
+      {$endif}
+    end;
+    var ___x := new Tree(ReadAllLines('All.snc'));
+    ___x.ToString;
+    WriteLogo;
+    while true do
+    begin
+      var s := ReadlnString;
+      Run(s);
     end;
   end;
 end.

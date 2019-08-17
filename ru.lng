@@ -3,3 +3,4 @@ VARIABLE_ALREADY_DECLARED=Переменная '{0}' уже объявлена
 VARIABLE_NOT_FOUND=Переменная '{0}' не найдена
 VARIABLE_NOT_DECLARED=Переменная '{0}' не объявлена
 NOT_SUPPORTED=Эта конструкция не поддерживается текущей версией Sunko
+SUCCESS_COMPILATION=[{0}, {1} строк] Успешно

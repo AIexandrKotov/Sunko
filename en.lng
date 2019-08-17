@@ -3,3 +3,4 @@ VARIABLE_ALREADY_DECLARED=The variable '{0}' is already declared
 VARIABLE_NOT_FOUND=The variable '{0}' was not found
 VARIABLE_NOT_DECLARED=The variable '{0}' is not declared
 NOT_SUPPORTED=This construct is not supported by the current Sunko version
+SUCCESS_COMPILATION=[{0}, {1} lines] Success

@@ -234,7 +234,12 @@ type
       end;
     end;
     
-    public static procedure Compile(fname: string) := Compile(new Tree(ReadAllLines(fname)));
+    public static function Compile(fname: string): integer;
+    begin
+      var t := ReadAllLines(fname);
+      Compile(new Tree(t));
+      Result := t.Length;
+    end;
   end;
 
 end.
