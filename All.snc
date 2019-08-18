@@ -1,6 +1,6 @@
 ﻿sunko KTX
 	date x
-	x = $currenttime$
+	x = {currenttime}
 	!write x
 	null x
 	loop 10 do

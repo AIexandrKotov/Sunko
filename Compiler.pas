@@ -72,6 +72,11 @@ type
         Result := 'int';
         exit;
       end;
+      if o is int64 then
+      begin
+        Result := 'int64';
+        exit
+      end;
       if o is real then
       begin
         Result := 'real';
@@ -98,7 +103,14 @@ type
     begin
       Result := expression;
       var s := t.Variables.Keys.OrderBy(x -> - x.Length);
-      foreach var x in s do Result := Result.Replace(x, t.Variables[x].Value.ToString);
+      foreach var x in s do
+      begin
+        case t.Variables[x].SunkoType of
+          'int', 'string', 'real': Result := Result.Replace(x, t.Variables[x].Value.ToString);
+          'date': Result := Result.Replace(x, DateTime(t.Variables[x].Value).Ticks.ToString);
+        end;
+        
+      end;
     end;
     
     public static function GetExpressionValue(t: Tree; expression: string): object;
@@ -168,6 +180,18 @@ type
               if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
               AssignmentDefinitionValue(t, vname, expr);
             end;
+            Sunko.FunctionCall(var fcall):
+            begin
+              var ofunc := FunctionCall(t, o.Strings[2]);
+              var otype := GetObjectType(ofunc);
+              if otype = 'bool' then
+              begin
+                ofunc := object(integer(boolean(ofunc) ? 1 : 0));
+                otype := 'int';
+              end;
+              if otype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, otype, t.Variables[vname].SunkoType);
+              AssignmentDefinitionValue(t, vname, ofunc);
+            end;
           end;
         end;
         
@@ -207,6 +231,19 @@ type
               end;
               if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
               AssignmentDefinitionValue(t, vname, expr);
+            end;
+            Sunko.FunctionCall(var fcall):
+            begin
+              DeclarationDefinition(t, vname, vtype, nested);
+              var ofunc := FunctionCall(t, o.Strings[3]);
+              var otype := GetObjectType(ofunc);
+              if otype = 'bool' then
+              begin
+                ofunc := object(integer(boolean(ofunc) ? 1 : 0));
+                otype := 'int';
+              end;
+              if otype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, otype, t.Variables[vname].SunkoType);
+              AssignmentDefinitionValue(t, vname, ofunc);
             end;
             else raise new SemanticError('NOT_SUPPORTED', t.Source);
           end;
@@ -279,6 +316,124 @@ type
       end;
     end;
     
+    public static function GetWordType(wt: WordType): string;
+    begin
+      Result := wt.ToString;
+    end;
+    
+    public static function GetFunc0(var t: Tree; funcname: string): object;
+    begin
+      funcname := funcname.ToLower;
+      if funcname.StartsWith('ktx.') then
+      begin
+        raise new SemanticError('NOT_INCLUDED', t.Source, 'KTX');
+      end
+      else if funcname.StartsWith('gc5a.') then
+      begin
+        raise new SemanticError('NOT_INCLUDED', t.Source, 'GC5A');
+      end
+      else
+      begin
+        case funcname of
+          'sunkoversion': Result := $'Sunko {Version.Version}';
+          'currenttime': Result := DateTime.Now;
+        else raise new SemanticError('FUNCTION_NOT_FOUND', t.Source, funcname);
+        end
+      end;
+    end;
+    
+    public static function GetFunc(var t: Tree; funcname: string; param: array of System.Tuple<string, string>): object;
+    begin
+      funcname := funcname.ToLower;
+      if funcname.StartsWith('ktx.') then
+      begin
+        raise new SemanticError('NOT_INCLUDED', t.Source, 'KTX');
+      end
+      else if funcname.StartsWith('gc5a.') then
+      begin
+        raise new SemanticError('NOT_INCLUDED', t.Source, 'GC5A');
+      end
+      else
+      begin
+        case funcname of
+          'gettype':
+          begin
+            if param.Length > 1 then raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            Result := param[0].Item1;
+          end;
+          'int64toint':
+          begin
+            if (param.Length = 1) and (param[0].Item1 = 'int64') then
+            begin
+              var out: integer;
+              if not integer.TryParse(param[0].Item2, out) then out := integer.MaxValue;
+              Result := out
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'inttoreal':
+          begin
+            if (param.Length = 1) and (param[0].Item1 = 'int') then
+            begin
+              Result := real(param[0].Item2.ToInteger);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+        else
+          begin
+            raise new SemanticError('FUNCTION_NOT_FOUND', t.Source);
+          end;
+        end
+      end;
+    end;
+    
+    public static function FunctionCall(var t: Tree; func: string): object;
+    begin
+      func := Parser.GetFunction(func);
+      if string.IsNullOrWhiteSpace(func) then raise new SemanticError('EMPTY_FUNCTION_CALL', t.Source);
+      var xtf := func.Split(' ');
+      var funcname := xtf[0];
+      var param := xtf.Length > 1 ? xtf[1:xtf.Length].JoinIntoString(' ') : '';
+      if string.IsNullOrEmpty(param) then
+      begin
+        Result := GetFunc0(t, funcname);
+      end
+      else
+      begin
+        var ParsedParam := Parser.Parse(param, true, t.Source);
+        //(type, string)
+        var ParsedParams := new List<System.Tuple<string, string>>;
+        for var i := 0 to ParsedParam.WordTypes.Length - 1 do
+        begin
+          if ParsedParam.WordTypes[i] is Sunko.FunctionCall then
+          begin
+            var fc := FunctionCall(t, Parser.GetFunction(ParsedParam.Strings[i]));
+            ParsedParams.Add((GetObjectType(fc), fc.ToString));
+          end
+          else if ParsedParam.WordTypes[i] is Expression then
+          begin
+            var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, ParsedParam.Strings[i]));
+            ParsedParams.Add((GetObjectType(expr), expr.ToString));
+          end
+          else if ParsedParam.WordTypes[i] is VariableName then
+          begin
+            var vname := ParsedParam.Strings[i];
+            if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
+            ParsedParams.Add((GetObjectType(t.Variables[vname].Value), t.Variables[vname].Value.ToString));
+          end
+          else if Isliteral(ParsedParam.WordTypes[i]) then
+          begin
+            ParsedParams.Add((GetLiteralType(ParsedParam.WordTypes[i]), GetLiteralValue(ParsedParam.WordTypes[i], ParsedParam.Strings[i]).ToString));
+          end
+          else raise new SemanticError('FUNCTION_NOT_SUPPORTED', t.Source, ParsedParam.WordTypes[i].ToString);
+        end;
+        try
+          Result := GetFunc(t, funcname, ParsedParams.ToArray);
+        except
+          on e: System.NullReferenceException do raise new SemanticError('FUNCTION_NOT_FOUND', t.Source, funcname);
+          on e: System.ArgumentException do raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+        end;
+      end;
+    end;
+    
     public static procedure Compile(t: Tree);
     begin
       var currentnestedlevel := -1;
@@ -314,6 +469,7 @@ type
           
           GotoDefinition:
           begin
+            if currentnestedlevel < 0 then raise new SemanticError('ONLY_DECLARATION_AND_ASSIGN', t.Source);
             var labelkey := t.Operations[i].Strings[1].ToInteger;
             if not t.Labels.ContainsKey(labelkey) then raise new SemanticError('LABEL_NOT_DECLARED', t.Source, labelkey.ToString);
             RecalculateNestedBetween(t, currentnestedlevel, i, t.Labels[labelkey]);
@@ -354,9 +510,19 @@ type
               begin
                 bool := t.Operations[i].Strings[1].ToInteger <> 0;
               end;
-              FunctionCall(var fcall):
+              Sunko.FunctionCall(var fcall):
               begin
-                raise new SemanticError('NOT_SUPPORTED', t.Source);
+                var fv := FunctionCall(t, t.Operations[i].Strings[1]);
+                var ft := GetObjectType(fv);
+                if ft = 'bool' then
+                begin
+                  bool := boolean(fv);
+                end
+                else if ft = 'int' then
+                begin
+                  bool := integer(fv) <> 0;
+                end
+                else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, ft, 'int');
               end;
             end;
             if elselabel <> 0 then
@@ -384,7 +550,7 @@ type
                 begin
                   var vname := t.Operations[i].Strings[1];
                   if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
-                  write(t.Variables[vname].Value.ToString);
+                  write(t.Variables[vname].Value);
                 end;
                 Expression(var exp):
                 begin
@@ -407,7 +573,7 @@ type
                   begin
                     var vname := t.Operations[i].Strings[1];
                     if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
-                    writeln(t.Variables[vname].Value.ToString);
+                    writeln(t.Variables[vname].Value);
                   end;
                   Expression(var exp):
                   begin

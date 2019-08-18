@@ -96,7 +96,7 @@ begin
     on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
     on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
     on e: SyntaxError do writelnColor(ConsoleColor.Yellow, $'[{e.Source}]Error: {e.GetErrorMessage}');
-    on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{e.Source}]Undefined Compiler Error: {e}');
+    on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{e.Source}]Undefined Compiler Error: {e.GetErrorMessage}');
     on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
   end;
 end;

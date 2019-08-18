@@ -2,7 +2,7 @@
 
 type
   FunctionCall = class(WordType)
-    public static function IsFunctionCall(s: string) := s.StartsWith('$') and s.EndsWith('$');
+    public static function IsFunctionCall(s: string) := s.StartsWith('{') and s.EndsWith('}');
   end;
 
 end.

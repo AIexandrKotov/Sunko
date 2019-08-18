@@ -59,9 +59,20 @@ type
       end else Result := self;
     end;
     
+    public static function GetString(self: string; delim1, delim2: char): string;
+    begin
+      if (self.Contains(delim1)) and (self.Contains(delim2)) then
+      begin
+        var a, b: integer;
+        a := self.IndexOf(delim1);
+        b := self.LastIndexOf(delim2);
+        Result := Copy(self, a+2, b-a-1);
+      end else Result := self;
+    end;
+    
     public static function GetString(self: string) := GetString(self, '''');
     
-    public static function GetFunction(self: string) := GetString(self, '$');
+    public static function GetFunction(self: string) := GetString(self, '{', '}');
     
     public static function WordTypes(s: array of string): array of WordType;
     begin
@@ -95,11 +106,11 @@ type
       var words := new List<string>;
       var current := new StringBuilder;
       var nested := false;
-      var nestedfunc := false;
+      var nestedfunclevel := 0;
       var nestedbracket := 0;
       for var i := 1 to s.Length do
       begin
-        if nestedfunc then current += s[i]
+        if nestedfunclevel > 0 then current += s[i]
         else if nested then current += s[i]
         else
         begin
@@ -128,9 +139,10 @@ type
           //if not nestedfunc then if (not nested) then current += '''';
           nested := not nested;
         end;
-        if (not nested) and (s[i] = '$') then
+        if (not nested) then
         begin
-          nestedfunc := not nestedfunc;
+          if (s[i] = '{') then nestedfunclevel += 1
+            else if (s[i] = '}') then nestedfunclevel -= 1;
         end;
         if s[i] = '(' then nestedbracket += 1;
         if s[i] = ')' then nestedbracket -= 1;
