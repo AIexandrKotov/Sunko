@@ -18,3 +18,5 @@ EMPTY_FUNCTION_CALL=Calling an empty function is not allowed
 FATAL_ERROR=Fatal error!
 ARRAY_MUST_CONTAINS_SIMILAR_TYPES=The array must contains similar type
 MULTI_ARRAYS=Multidimensional arrays are prohibited
+USING_ARRAY_WITHOUT_INDEX=Using the array identifier without index
+WRONG_EXPRESSION=Wrong expression

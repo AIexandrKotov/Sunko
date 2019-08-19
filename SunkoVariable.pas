@@ -7,11 +7,12 @@ type
     private fSunkoType: string;
     
     private fArray: array of object;
-    private fIsArray: boolean;
+    private function fIsArray := fValue.GetType.IsArray;
     
     public property Value: object read fValue write fValue;
     public property NestedLevel: integer read fNestedLevel write fNestedLevel;
     public property SunkoType: string read fSunkoType;
+    public property IsArray: boolean read fIsArray;
     
     public constructor(val: object; typ: string; nlev: integer);
     begin

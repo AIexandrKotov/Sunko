@@ -118,7 +118,13 @@ type
     public static function GetExpressionValue(t: Tree; expression: string): object;
     begin
       var table := new System.Data.DataTable;
-      Result := table.Compute(expression, '');
+      try
+        Result := table.Compute(Parser.IncludeVariablesIntoExpression(t, expression), '');
+      except
+        on e: System.Data.SyntaxErrorException do raise new SemanticError('WRONG_EXPRESSION', t.Source);
+        on e: System.DivideByZeroException do raise new SemanticError('WRONG_EXPRESSION', t.Source);
+      end;
+      if Result is decimal then Result := real(decimal(Result));
     end;
     
     public static procedure DeclarationDefinition(var t: Tree; varname, typename: string; nestedlevel: integer);
@@ -172,7 +178,7 @@ type
             end;
             Expression(var exp):
             begin
-              var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, o.Strings[2]));
+              var expr := GetExpressionValue(t, o.Strings[2]);
               var exprtype := GetObjectType(expr);
               if exprtype = 'bool' then
               begin
@@ -224,7 +230,7 @@ type
             Expression(var exp):
             begin
               DeclarationDefinition(t, vname, vtype, nested);
-              var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, o.Strings[3]));
+              var expr := GetExpressionValue(t, o.Strings[3]);
               var exprtype := GetObjectType(expr);
               if exprtype = 'bool' then
               begin
@@ -328,7 +334,11 @@ type
       funcname := funcname.ToLower;
       if funcname.StartsWith('ktx.') then
       begin
-        raise new SemanticError('NOT_INCLUDED', t.Source, 'KTX');
+        try
+          Result := KTX.KTX.FunctionCall(funcname);
+        except
+          on e: NullReferenceException do raise new SemanticError('FUNCTION_NOT_FOUND', t.Source, funcname);
+        end;
       end
       else if funcname.StartsWith('gc5a.') then
       begin
@@ -350,7 +360,12 @@ type
       funcname := funcname.ToLower;
       if funcname.StartsWith('ktx.') then
       begin
-        raise new SemanticError('NOT_INCLUDED', t.Source, 'KTX');
+        try
+          Result := KTX.KTX.FunctionCall(funcname, param);
+        except
+          on e: ArgumentException do raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          on e: NullReferenceException do raise new SemanticError('FUNCTION_NOT_FOUND', t.Source, funcname);
+        end;
       end
       else if funcname.StartsWith('gc5a.') then
       begin
@@ -645,7 +660,7 @@ type
           end;
         else
           begin
-            raise new SemanticError('FUNCTION_NOT_FOUND', t.Source);
+            raise new SemanticError('FUNCTION_NOT_FOUND', t.Source, funcname);
           end;
         end
       end;
@@ -676,7 +691,7 @@ type
           end
           else if ParsedParam.WordTypes[i] is Expression then
           begin
-            var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, ParsedParam.Strings[i]));
+            var expr := GetExpressionValue(t, ParsedParam.Strings[i]);
             ParsedParams.Add((GetObjectType(expr), expr.ToString));
           end
           else if ParsedParam.WordTypes[i] is VariableName then
@@ -752,7 +767,7 @@ type
             match t.Operations[i].WordTypes[1] with
               Expression(var exp):
               begin
-                var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[1]));
+                var expr := GetExpressionValue(t, t.Operations[i].Strings[1]);
                 var exprtype := GetObjectType(expr);
                 if exprtype = 'bool' then
                 begin
@@ -820,7 +835,7 @@ type
                 end;
                 Expression(var exp):
                 begin
-                  var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[1]));
+                  var expr := GetExpressionValue(t, t.Operations[i].Strings[1]);
                   write(expr.ToString);
                 end;
               end;
@@ -843,7 +858,7 @@ type
                   end;
                   Expression(var exp):
                   begin
-                    var expr := GetExpressionValue(t, IncludeVariablesIntoExpression(t, t.Operations[i].Strings[1]));
+                    var expr := GetExpressionValue(t, t.Operations[i].Strings[1]);
                     writeln(expr.ToString);
                   end;
                 end;

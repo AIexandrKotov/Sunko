@@ -1,5 +1,4 @@
-﻿
-program Sunko;
+﻿program Sunko;
 uses System;
 {$resource 'ru.lng'}
 {$resource 'en.lng'}
@@ -65,7 +64,7 @@ end;
 procedure WriteLogo;
 begin
   WritelnColor(ConsoleColor.Green, $'Sunko {Version.Version}');
-  WritelnColor(ConsoleColor.Yellow, $'KTX  <not included>');
+  WritelnColor(ConsoleColor.Yellow, $'KTX  {KTX.Version.Version}');
   WritelnColor(ConsoleColor.Cyan, $'GC5A <not included>');
   WritelnColor(ConsoleColor.Magenta, 'Insert the command and press Enter!');
 end;

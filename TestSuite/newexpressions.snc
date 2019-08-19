@@ -1,0 +1,10 @@
+sunko
+	real x = 2.28
+	real y = ({Round x}*2.28)
+	int a = 100
+	if ((not ((x = ({Round x}*2.28)) and (({Round x}*2.28) = x))) or (({Round x}*2.28) = y)) then
+		!writeln x
+		!writeln y
+		!writeln a
+	end
+end

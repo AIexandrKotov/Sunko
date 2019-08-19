@@ -1,0 +1,4 @@
+sunko
+	real x = (1 % 0)
+	!writeln x
+end

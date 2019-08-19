@@ -98,6 +98,122 @@ type
       end;
     end;
     
+    private static fsymbolsinexpresionnames := Range('a', 'z').ToArray + Range('0', '9').ToArray + '#';
+    private static prohibitedwordsinexpressions := new string[]('and', 'or', 'not', 'mod', 'div');
+    
+    public static function IsName(s: string): boolean;
+    begin
+      if (string.IsNullOrWhiteSpace(s)) or (s[1].IsDigit) then Result := false
+      else
+      begin
+        Result := (not prohibitedwordsinexpressions.Contains(s.ToLower)) and (s.All(x -> fsymbolsinexpresionnames.Contains(x)));
+      end;
+    end;
+    
+    public static function IncludeVariablesIntoExpression(t: Tree; expr: string): string;
+    begin
+      WhiteSpacesVisitor(expr);
+      var lst := new List<string>;
+      var current := new StringBuilder;
+      var nestedfunc := 0;
+      var lastfunc := false;
+      for var i := 1 to expr.Length do
+      begin
+        if expr[i] = '{' then
+        begin
+          if nestedfunc = 0 then
+          begin
+            lst += current.ToString;
+            current.Clear;
+          end;
+          nestedfunc += 1;
+          lastfunc := true;
+          current += '{';
+        end
+        else
+        if expr[i] = '}' then
+        begin
+          nestedfunc -= 1;
+          current += '}';
+        end
+        else
+        if nestedfunc > 0 then current += expr[i] else
+        begin
+          if lastfunc then
+          begin
+            lst += current.ToString;
+            current.Clear;
+            lastfunc := false;
+          end;
+          if fsymbolsinexpresionnames.Contains(expr[i]) then
+          begin
+            if current.Length > 0 then
+            begin
+              if IsName(current.ToString) then current += expr[i] else
+              begin
+                if RealLiteral.IsRealLiteral(current.ToString) then
+                begin
+                  current += expr[i]
+                end
+                else
+                begin
+                  lst += current.ToString;
+                  current.Clear;
+                  current += expr[i];
+                end;
+              end;
+            end else current += expr[i];
+          end else if expr[i] = ' ' then
+          begin
+            if current.Length > 0 then
+            begin
+              lst += current.ToString;
+              current.Clear;
+            end;
+          end else
+          begin
+            if IsName(current.ToString) then
+            begin
+              lst += current.ToString;
+              current.Clear;
+            end;
+            current += expr[i];
+          end;
+        end;
+      end;
+      if current.Length > 0 then
+      begin
+        lst += current.ToString;
+        current.Clear;
+      end;
+      for var i := 0 to lst.Count - 1 do
+      begin
+        lst[i] := lst[i].ToLower;
+        if (VariableName.IsVariableName(lst[i])) and (not prohibitedwordsinexpressions.Contains(lst[i])) then
+        begin
+          if not t.Variables.ContainsKey(lst[i]) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, lst[i]);
+          if t.Variables[lst[i]].IsArray then raise new SemanticError('USING_ARRAY_WITHOUT_INDEX', t.Source);
+          var xx := t.Variables[lst[i]].Value;
+          var tx := Compiler.GetObjectType(xx);
+          if tx = 'string' then raise new SemanticError('NOT_SUPPORTED', t.Source);
+          if tx = 'date' then xx := DateTime(xx).Ticks;
+          lst[i] := xx.ToString;
+        end
+        else if ConstantName.IsConstantName(lst[i]) then raise new SemanticError('NOT_SUPPORTER', t.Source)
+        else if FunctionCall.IsFunctionCall(lst[i]) then
+        begin
+          var xx := Compiler.FunctionCall(t, lst[i]);
+          var tx := Compiler.GetObjectType(xx);
+          if tx.EndsWith('[]') then raise new SemanticError('USING_ARRAY_WITHOUT_INDEX', t.Source);
+          if tx = 'string' then raise new SemanticError('NOT_SUPPORTED', t.Source);
+          if tx = 'date' then xx := DateTime(xx).Ticks;
+          lst[i] := xx.ToString;
+        end;
+        //else raise new ArgumentException;
+      end;
+      Result := lst.JoinIntoString(' ');
+    end;
+    
     public static function Parse(s: string; disable: boolean; source: integer): Operation;
     begin
       WhiteSpacesVisitor(s);
