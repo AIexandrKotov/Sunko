@@ -337,6 +337,7 @@ type
         case funcname of
           'sunkoversion': Result := $'Sunko {Version.Version}';
           'currenttime': Result := DateTime.Now;
+          'random': Result := PABCSystem.Random;
         else raise new SemanticError('FUNCTION_NOT_FOUND', t.Source, funcname);
         end
       end;
@@ -360,6 +361,7 @@ type
           begin
             if param.Length > 1 then raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
             Result := param[0].Item1;
+            exit;
           end;
           'int64toint':
           begin
@@ -367,7 +369,8 @@ type
             begin
               var out: integer;
               if not integer.TryParse(param[0].Item2, out) then out := integer.MaxValue;
-              Result := out
+              Result := out;
+              exit;
             end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
           end;
           'inttoreal':
@@ -375,6 +378,244 @@ type
             if (param.Length = 1) and (param[0].Item1 = 'int') then
             begin
               Result := real(param[0].Item2.ToInteger);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          ///
+          ///Стандартные функции
+          ///
+          'degtorad':
+          begin
+            if (param.Length = 1) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) then
+            begin
+              Result := DegToRad(param[0].Item2.ToReal);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'radtodeg':
+          begin
+            if (param.Length = 1) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) then
+            begin
+              Result := RadToDeg(param[0].Item2.ToReal);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'abs':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := System.Math.Abs(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := System.Math.Abs(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'arctan':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := System.Math.Atan(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := System.Math.Atan(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'arcsin':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := System.Math.Asin(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := System.Math.Asin(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'arccos':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := System.Math.Acos(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := System.Math.Acos(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'cos':
+          begin
+            if (param.Length = 1) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) then
+            begin
+              Result := System.Math.Cos(param[0].Item2.ToReal);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'exp':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := System.Math.Exp(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := System.Math.Exp(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'frac':
+          begin
+            if (param.Length = 1) and (param[0].Item1 = 'real') then
+            begin
+              Result := PABCSystem.Frac(param[0].Item2.ToReal);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'int':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := PABCSystem.Int(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := PABCSystem.Int(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'ln':
+          begin
+            if (param.Length = 1) and (((param[0].Item1 = 'int') or (param[0].Item1 = 'real'))) then
+            begin
+              Result := System.Math.Log(param[0].Item2.ToReal);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'log':
+          begin
+            if (param.Length = 2) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) and ((param[1].Item1 = 'int') or (param[1].Item1 = 'real')) then
+            begin
+              Result := System.Math.Log((param[0].Item2.ToReal), (param[1].Item2.ToReal));
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'log10':
+          begin
+            if (param.Length = 1) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) then
+            begin
+              Result := System.Math.Log10(param[0].Item2.ToReal);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'sin':
+          begin
+            if (param.Length = 1) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) then
+            begin
+              Result := System.Math.Sin(param[0].Item2.ToReal);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'sqr':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := param[0].Item2.ToInteger**2;
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := param[0].Item2.ToReal**2;
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'sqrt':
+          begin
+            if (param.Length = 1) then
+            begin
+              if (param[0].Item1 = 'int') then
+              begin
+                Result := Sqrt(param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') then
+              begin
+                Result := Sqrt(param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else if (param.Length = 2) and ((param[0].Item1 = 'int') or (param[0].Item1 = 'real')) and ((param[1].Item1 = 'int') or (param[1].Item1 = 'real')) then
+            begin
+              if (param[0].Item1 = 'int') and (param[1].Item1 = 'int') then
+              begin
+                Result := param[0].Item2.ToInteger**(1/param[0].Item2.ToInteger);
+                exit;
+              end else if (param[0].Item1 = 'real') and (param[0].Item2 = 'real') then
+              begin
+                Result := param[0].Item2.ToReal**(1/param[0].Item2.ToReal);
+                exit;
+              end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end
+            else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'random':
+          begin
+            if (param.Length = 1) then
+            begin
+              if param[0].Item1 = 'int' then
+              begin
+                Result := PABCSystem.Random(param[0].Item2.ToInteger);
+                exit;
+              end
+              else if param[0].Item1 = 'real' then
+              begin
+                Result := PABCSystem.Random*param[0].Item2.ToReal;
+              end;
+            end
+            else if (param.Length = 2) then
+            begin
+              if (param[0].Item1 = 'int') and (param[1].Item1 = 'int') then
+              begin
+                Result := PABCSystem.Random(param[0].Item2.ToInteger, param[0].Item2.ToInteger);
+                exit;
+              end
+              else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'round':
+          begin
+            if (param.Length = 1) and (param[0].Item1 = 'real') then
+            begin
+              Result := Round(param[0].Item2.ToReal);
+              exit;
+            end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'trunc':
+          begin
+            if (param.Length = 1) and (param[0].Item1 = 'real') then
+            begin
+              Result := Trunc(param[0].Item2.ToReal);
+              exit;
             end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
           end;
         else
