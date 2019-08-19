@@ -4,7 +4,7 @@ type
   Parser = static class
     public static procedure WhiteSpacesVisitor(var s: string);
     begin
-      s := s.TrimStart(' ', #9, #10, #13);
+      s := s.Trim(' ', #9, #10, #13);
     end;
     
     public static procedure WhiteSpacesVisitor(var s: array of string);

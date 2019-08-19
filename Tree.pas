@@ -47,8 +47,8 @@ type
       fVariables := new Dictionary<string, SunkoVariable>;
       fLabels := new Dictionary<integer, integer>;
       
-      Parser.WhiteSpacesVisitor(ss);
       Parser.CommentVisitor(ss);
+      Parser.WhiteSpacesVisitor(ss);
       for var i := 0 to ss.Length - 1 do
       begin
         {$ifdef DEBUG}
