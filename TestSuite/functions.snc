@@ -1,0 +1,12 @@
+sunko
+	int a = 0
+	string atype = {gettype a}
+	!writeln atype
+	string xtype = {gettype {sunkoversion}}
+	!writeln xtype
+	if true then
+	
+	else
+	
+	end
+end

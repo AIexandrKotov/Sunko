@@ -16,3 +16,5 @@ NOT_INCLUDED=Библиотека {0} не найдена
 FUNCTION_NOT_SUPPORTED=Элементы типа {0} не поддерживаются в функциях
 EMPTY_FUNCTION_CALL=Вызов пустых функций запрещён
 FATAL_ERROR=Ужасная ошибка!
+ARRAY_MUST_CONTAINS_SIMILAR_TYPES=Массив должен содержать элементы одного типа!
+MULTI_ARRAYS=Многомерные массивы запрещены

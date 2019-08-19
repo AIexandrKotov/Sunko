@@ -1,0 +1,6 @@
+sunko
+	date x1 = {currenttime}
+	date x2 = {currenttime}
+	int x3 = {Int64ToInt (x2-x1)}
+	!write x3
+end

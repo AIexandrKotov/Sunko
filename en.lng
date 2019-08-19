@@ -16,3 +16,5 @@ NOT_INCLUDED=Library {0} not included
 FUNCTION_NOT_SUPPORTED=Element of type {0} not supported in the functions
 EMPTY_FUNCTION_CALL=Calling an empty function is not allowed
 FATAL_ERROR=Fatal error!
+ARRAY_MUST_CONTAINS_SIMILAR_TYPES=The array must contains similar type
+MULTI_ARRAYS=Multidimensional arrays are prohibited

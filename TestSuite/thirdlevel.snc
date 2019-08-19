@@ -1,0 +1,4 @@
+sunko
+	string x = {gettype {gettype {sunkoversion}}}
+	!write x
+end

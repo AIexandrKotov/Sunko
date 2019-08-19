@@ -66,36 +66,38 @@ type
     end;
     
     public static function GetObjectType(o: object): string;
+    type
+      ArrayOf<T> = array of T;
     begin
-      if o is integer then
+      if o is ArrayOf<integer> then Result := 'int[]' 
+      else if o is integer then
       begin
         Result := 'int';
-        exit;
-      end;
-      if o is int64 then
+      end
+      else if o is ArrayOf<int64> then Result := 'int64[]' 
+      else if o is int64 then
       begin
         Result := 'int64';
-        exit
-      end;
-      if o is real then
+      end
+      else if o is ArrayOf<real> then Result := 'real[]' 
+      else if o is real then
       begin
         Result := 'real';
-        exit;
-      end;
-      if o is string then
+      end
+      else if o is ArrayOf<string> then Result := 'string[]' 
+      else if o is string then
       begin
         Result := 'string';
-        exit;
-      end;
-      if o is DateTime then
+      end
+      else if o is ArrayOf<DateTime> then Result := 'date[]' 
+      else if o is DateTime then
       begin
         Result := 'date';
-        exit;
-      end;
-      if o is boolean then
+      end
+      else if o is ArrayOf<boolean> then Result := 'bool[]'
+      else if o is boolean then
       begin
         Result := 'bool';
-        exit;
       end;
     end;
     
@@ -617,6 +619,29 @@ type
               Result := Trunc(param[0].Item2.ToReal);
               exit;
             end else raise new SemanticError('FUNCTION_WRONG_ARGUMENTS', t.Source, funcname);
+          end;
+          'array':
+          begin
+            var rslt := new Object[param.Length];
+            for var i := 0 to param.Length - 1 do
+            begin
+              if param[i].Item1 <> param[0].Item1 then raise new SemanticError('ARRAY_MUST_CONTAINS_SIMILAR_TYPES', t.Source);
+              if param[0].Item1.EndsWith('[]') then raise new SemanticError('MULTI_ARRAYS', t.Source);
+              case param[0].Item1 of
+                'int64': rslt[i] := int64.Parse(param[i].Item2);
+                'date': rslt[i] := DateTime.Parse(param[i].Item2);
+                'int': rslt[i] := param[i].Item2.ToInteger;
+                'string': rslt[i] := param[i].Item2;
+                'real': rslt[i] := param[i].Item2.ToReal;
+              end;
+            end;
+            case param[0].Item1 of
+              'int64': Result := rslt.ConvertAll(x -> int64(x));
+              'int': Result := rslt.ConvertAll(x -> integer(x));
+              'date': Result := rslt.ConvertAll(x -> DateTime(x));
+              'real': Result := rslt.ConvertAll(x -> real(x));
+              'string': Result := rslt.ConvertAll(x -> string(x));
+            end;
           end;
         else
           begin
