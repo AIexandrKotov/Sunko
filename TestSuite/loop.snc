@@ -1,0 +1,7 @@
+sunko
+	int x = 1
+	loop 10 do
+		!write x
+		x = x+1
+	end
+end
