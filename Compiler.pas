@@ -715,10 +715,61 @@ type
       end;
     end;
     
+    public static function GetWhileBool(var t: Tree; op: Operation): boolean;
+    begin
+      match op.WordTypes[1] with
+        Expression(var exp):
+        begin
+          var expr := GetExpressionValue(t, op.Strings[1]);
+          var exprtype := GetObjectType(expr);
+          if exprtype = 'bool' then
+          begin
+            Result := boolean(expr);
+          end
+          else if exprtype <> 'int' then
+          begin
+            Result := integer(expr) <> 0;
+          end
+          else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, 'int');
+        end;
+        VariableName(var __vname):
+        begin
+          var vname := op.Strings[1];
+          if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
+          var tp := GetObjectType(t.Variables[vname].Value);
+          if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
+          Result := integer(t.Variables[vname].Value) <> 0;
+        end;
+        IntegerLiteral(var int):
+        begin
+          Result := op.Strings[1].ToInteger <> 0;
+        end;
+        Sunko.FunctionCall(var fcall):
+        begin
+          var fv := FunctionCall(t, op.Strings[1]);
+          var ft := GetObjectType(fv);
+          if ft = 'bool' then
+          begin
+            Result := boolean(fv);
+          end
+          else if ft = 'int' then
+          begin
+            Result := integer(fv) <> 0;
+          end
+          else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, ft, 'int');
+        end;
+      end;
+    end;
+    
     public static procedure Compile(t: Tree);
     begin
       var currentnestedlevel := -1;
       var i := 0;
+      var cyclenested := new Stack<word>;
+      //1 - while
+      var cyclestack := new Stack<byte>;
+      var cyclelables := new Stack<integer>;
+      var cyclewhiles := new Stack<Operation>;
       var elseskipstack := new Stack<integer>;
       var elsereturnstack := new Stack<integer>;
       while i < t.Operations.Length - 1 do
@@ -734,12 +785,34 @@ type
           
           EndOperator:
           begin
-            currentnestedlevel -= 1;
-            foreach var x in t.Variables.Keys.ToArray do
+            if (cyclenested.Count <> 0) and (cyclenested.Peek = currentnestedlevel) then
             begin
-              if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+              case cyclestack.Peek of
+                1:
+                ///WHILE
+                begin
+                  if GetWhileBool(t, cyclewhiles.Peek) then i := cyclelables.Peek + 1 else
+                  begin
+                    cyclenested.Pop; cyclelables.Pop; cyclestack.Pop; cyclewhiles.Pop;
+                    i += 1;
+                    currentnestedlevel -= 1;
+                    foreach var x in t.Variables.Keys.ToArray do
+                    begin
+                      if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+                    end;
+                  end;
+                end;
+              end;
+            end
+            else
+            begin
+              currentnestedlevel -= 1;
+              foreach var x in t.Variables.Keys.ToArray do
+              begin
+                if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+              end;
+              i += 1;
             end;
-            i += 1;
           end;
           
           DeclareVariable, AssignmentVariable, DeclareWithAssignment, DestructionVariable:
@@ -816,6 +889,26 @@ type
             end
             else if not bool then i := endlabel;
             if bool then i += 1;
+          end;
+          
+          WhileOperator:
+          begin
+            currentnestedlevel += 1;
+            var exitlevel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
+            var bool := GetWhileBool(t, t.Operations[i]);
+            
+            if bool then
+            begin
+              cyclelables += i;
+              cyclenested += word(currentnestedlevel);
+              cyclestack += byte(1);
+              cyclewhiles += t.Operations[i];
+              i += 1;
+            end else
+            begin
+              currentnestedlevel -= 1;
+              i := exitlevel + 1;
+            end;
           end;
           
           ProcedureCall:
