@@ -815,6 +815,15 @@ type
             end;
           end;
           
+          ExitOperator:
+          begin
+            if (cyclenested.Count > 0) then
+            begin
+              i := cyclelables.Pop + 1;
+              cyclenested.Pop; cyclestack.Pop; cyclewhiles.Pop;
+            end else i := t.Operations.Length;
+          end;
+          
           DeclareVariable, AssignmentVariable, DeclareWithAssignment, DestructionVariable:
           begin
             DeclarationAndAssignment(t, t.Operations[i], currentnestedlevel);
