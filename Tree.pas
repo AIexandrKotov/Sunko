@@ -39,6 +39,7 @@ type
     public static procedure SyntaxVisitor(var t: Tree);
     begin
       NestedsVisitor(t);
+      SyntaxTreeVisitor.visit(t);
     end;
     
     public constructor(ss: array of string);

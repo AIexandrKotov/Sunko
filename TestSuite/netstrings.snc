@@ -1,0 +1,11 @@
+sunko
+	string s1 = 'str1'
+	string s2 = s1
+	s1 = 'str2'
+	int equal = {equals s1 s2}
+	if equal then
+		!writeln 'true'
+	else
+		!writeln 'false'
+	end
+end

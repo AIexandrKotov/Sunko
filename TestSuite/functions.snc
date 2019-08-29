@@ -4,7 +4,7 @@ sunko
 	!writeln atype
 	string xtype = {gettype {sunkoversion}}
 	!writeln xtype
-	if true then
+	if 1 then
 	
 	else
 	

@@ -202,7 +202,7 @@ type
         else if ConstantName.IsConstantName(lst[i]) then raise new SemanticError('NOT_SUPPORTER', t.Source)
         else if FunctionCall.IsFunctionCall(lst[i]) then
         begin
-          var xx := Compiler.FunctionCall(t, lst[i]);
+          var xx := Methods.FunctionCall(t, lst[i]);
           var tx := Compiler.GetObjectType(xx);
           if tx.EndsWith('[]') then raise new SemanticError('USING_ARRAY_WITHOUT_INDEX', t.Source);
           if tx = 'string' then raise new SemanticError('NOT_SUPPORTED', t.Source);
