@@ -25,6 +25,7 @@ uses System;
 {$includenamespace Parser.pas}
 {$includenamespace SunkoVariable.pas}
 {$includenamespace Tree.pas}
+{$includenamespace SyntaxVisitor.pas}
 {$includenamespace TestSuite.pas}
 {$includenamespace Compiler.pas}
 

@@ -24,6 +24,7 @@
     <Item Type="SourceFile" Name="SunkoVariable.pas" Path="SunkoVariable.pas" />
     <Item Type="SourceFile" Name="Compiler.pas" Path="Compiler.pas" />
     <Item Type="SourceFile" Name="Version.pas" Path="Version.pas" />
+    <Item Type="SourceFile" Name="SyntaxVisitor.pas" Path="SyntaxVisitor.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
     <Item Type="Reference" AssemblyName="System.Data" FullAssemblyName="System.Data.dll" />
     <Item Type="Reference" AssemblyName="KTX" FullAssemblyName="KTX.dll" />

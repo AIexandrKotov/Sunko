@@ -1,0 +1,20 @@
+sunko
+	for i = 1 to 5 do
+		int j = i
+		while (j < 3) do
+			j = j+1
+			!write j/2
+		end
+		!writeln
+		if i=4 then
+			!write 'Sunko one love'
+		else
+			!write 'AMD FX-8350 ONE LOVE'
+		end
+		!writeln
+		loop j do
+			!write 0
+		end
+		null j
+	end
+end

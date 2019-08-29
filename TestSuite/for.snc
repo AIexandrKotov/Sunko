@@ -1,0 +1,11 @@
+sunko
+	for i = 10 to 1 do
+		!write i
+		!write ' '
+	end
+	!writeln
+	for i = 1 to 1 do
+		!write i
+	end
+	!writeln
+end

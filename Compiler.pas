@@ -761,16 +761,16 @@ type
       end;
     end;
     
-    public static function GetLoopInt(var t: Tree; op: Operation): integer;
+    public static function GetIntegerValue(var t: Tree; op: Operation; pos: integer): integer;
     begin
-      match op.WordTypes[1] with
+      match op.WordTypes[pos] with
         IntegerLiteral(var lit):
         begin
-          Result := op.Strings[1].ToInteger;
+          Result := op.Strings[pos].ToInteger;
         end;
         VariableName(var o):
         begin
-          var vname := op.Strings[1];
+          var vname := op.Strings[pos];
           if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
           var tp := GetObjectType(t.Variables[vname].Value);
           if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
@@ -778,7 +778,7 @@ type
         end;
         Expression(var o):
         begin
-          var expr := GetExpressionValue(t, op.Strings[1]);
+          var expr := GetExpressionValue(t, op.Strings[pos]);
           var exprtype := GetObjectType(expr);
           if exprtype = 'int' then
           begin
@@ -788,7 +788,7 @@ type
         end;
         Sunko.FunctionCall(var o):
         begin
-          var fv := FunctionCall(t, op.Strings[1]);
+          var fv := FunctionCall(t, op.Strings[pos]);
           var ft := GetObjectType(fv);
           if ft = 'int' then
           begin
@@ -797,6 +797,12 @@ type
           else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, ft, 'int');
         end;
       end;
+    end;
+    
+    public static procedure AssignCycleVariable(var t: Tree; nlevel: integer; varname: string; value: integer);
+    begin
+      if t.Variables.ContainsKey(varname) then raise new SemanticError('VARIABLE_ALREADY_DECLARED', t.Source, varname);
+      t.Variables.Add(varname, new SunkoVariable(value, 'int', nlevel));
     end;
     
     public static procedure Compile(t: Tree);
@@ -808,7 +814,14 @@ type
       var cyclestack := new Stack<byte>;
       var cyclelables := new Stack<integer>;
       var cyclewhiles := new Stack<Operation>;
+      
       var cycleloops := new Stack<integer>;
+      
+      var cycleforvariables := new Stack<string>;
+      var cycleforleft := new Stack<integer>;
+      var cycleforright := new Stack<integer>;
+      var cycleforstep := new Stack<integer>;
+      
       var elseskipstack := new Stack<integer>;
       var elsereturnstack := new Stack<integer>;
       while i < t.Operations.Length - 1 do
@@ -853,6 +866,51 @@ type
                   else
                   begin
                     cyclenested.Pop; cyclelables.Pop; cyclestack.Pop;
+                    i += 1;
+                    currentnestedlevel -= 1;
+                    foreach var x in t.Variables.Keys.ToArray do
+                    begin
+                      if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+                    end;
+                  end;
+                end;
+                3:
+                ///FOR
+                begin
+                  var cur := integer(t.Variables[cycleforvariables.Peek].Value);
+                  var step := cycleforstep.Peek;
+                  var isexit := false;
+                  if step > 0 then
+                  begin
+                    cur += step;
+                    if cur <= cycleforright.Peek then
+                    begin
+                      i := cyclelables.Peek + 1;
+                      t.Variables[cycleforvariables.Peek].Value := cur;
+                    end
+                    else isexit := true;
+                  end
+                  else
+                  begin
+                    cur += step;
+                    if cur >= cycleforright.Peek then
+                    begin
+                      i := cyclelables.Peek + 1;
+                      t.Variables[cycleforvariables.Peek].Value := cur;
+                    end
+                    else isexit := true;
+                  end;
+                  
+                  if isexit then
+                  begin
+                    cyclenested.Pop; cyclelables.Pop; cyclestack.Pop; cycleforleft.Pop; cycleforright.Pop; cycleforstep.Pop;
+                    t.Variables.Remove(cycleforvariables.Pop);
+                    i += 1;
+                    currentnestedlevel -= 1;
+                    foreach var x in t.Variables.Keys.ToArray do
+                    begin
+                      if t.Variables[x].NestedLevel > currentnestedlevel then t.Variables.Remove(x);
+                    end;
                   end;
                 end;
               end;
@@ -911,11 +969,27 @@ type
             if bool then i += 1;
           end;
           
+          ForCycleOperator:
+          begin
+            currentnestedlevel += 1;
+            var exitlevel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
+            cyclelables += i;
+            cycleforleft += GetIntegerValue(t, t.Operations[i], 3);
+            AssignCycleVariable(t, currentnestedlevel, t.Operations[i].Strings[1], cycleforleft.Peek);
+            cycleforvariables += t.Operations[i].Strings[1];
+            cyclenested += word(currentnestedlevel);
+            cyclestack += byte(3);
+            cycleforright += GetIntegerValue(t, t.Operations[i], 5);
+            if cycleforleft.Peek >= cycleforright.Peek then cycleforstep += -1 else cycleforstep += 1;
+            
+            i += 1;
+          end;
+          
           LoopCycleOperator:
           begin
             currentnestedlevel += 1;
             var exitlevel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
-            var count := GetLoopInt(t, t.Operations[i]);
+            var count := GetIntegerValue(t, t.Operations[i], 1);
             
             if count > 0 then
             begin

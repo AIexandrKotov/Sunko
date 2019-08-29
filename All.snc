@@ -1,8 +1,11 @@
 ﻿sunko KTX
 	date x
 	x = {currenttime}
-	!write x
+	!writeln x
 	null x
+	for i = 1 to 10 do
+		!writeln i
+	end
 	loop 10 do
 		!write 0
 	end
