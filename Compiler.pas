@@ -715,12 +715,12 @@ type
       end;
     end;
     
-    public static function GetWhileBool(var t: Tree; op: Operation): boolean;
+    public static function GetConditionValue(var t: Tree; op: Operation; pos: integer): boolean;
     begin
-      match op.WordTypes[1] with
+      match op.WordTypes[pos] with
         Expression(var exp):
         begin
-          var expr := GetExpressionValue(t, op.Strings[1]);
+          var expr := GetExpressionValue(t, op.Strings[pos]);
           var exprtype := GetObjectType(expr);
           if exprtype = 'bool' then
           begin
@@ -734,7 +734,7 @@ type
         end;
         VariableName(var __vname):
         begin
-          var vname := op.Strings[1];
+          var vname := op.Strings[pos];
           if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
           var tp := GetObjectType(t.Variables[vname].Value);
           if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
@@ -742,11 +742,11 @@ type
         end;
         IntegerLiteral(var int):
         begin
-          Result := op.Strings[1].ToInteger <> 0;
+          Result := op.Strings[pos].ToInteger <> 0;
         end;
         Sunko.FunctionCall(var fcall):
         begin
-          var fv := FunctionCall(t, op.Strings[1]);
+          var fv := FunctionCall(t, op.Strings[pos]);
           var ft := GetObjectType(fv);
           if ft = 'bool' then
           begin
@@ -830,7 +830,7 @@ type
                 1:
                 ///WHILE
                 begin
-                  if GetWhileBool(t, cyclewhiles.Peek) then i := cyclelables.Peek + 1 else
+                  if GetConditionValue(t, cyclewhiles.Peek, 1) then i := cyclelables.Peek + 1 else
                   begin
                     cyclenested.Pop; cyclelables.Pop; cyclestack.Pop; cyclewhiles.Pop;
                     i += 1;
@@ -897,50 +897,8 @@ type
             currentnestedlevel += 1;
             var elselabel := FindNextElseOnThisNestedLevel(t, i, currentnestedlevel);
             var endlabel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
-            var bool := false;
+            var bool := GetConditionValue(t, t.Operations[i], 1);
             
-            match t.Operations[i].WordTypes[1] with
-              Expression(var exp):
-              begin
-                var expr := GetExpressionValue(t, t.Operations[i].Strings[1]);
-                var exprtype := GetObjectType(expr);
-                if exprtype = 'bool' then
-                begin
-                  bool := boolean(expr);
-                end
-                else if exprtype <> 'int' then
-                begin
-                  bool := integer(expr) <> 0;
-                end
-                else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, 'int');
-              end;
-              VariableName(var __vname):
-              begin
-                var vname := t.Operations[i].Strings[1];
-                if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
-                var tp := GetObjectType(t.Variables[vname].Value);
-                if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
-                bool := integer(t.Variables[vname].Value) <> 0;
-              end;
-              IntegerLiteral(var int):
-              begin
-                bool := t.Operations[i].Strings[1].ToInteger <> 0;
-              end;
-              Sunko.FunctionCall(var fcall):
-              begin
-                var fv := FunctionCall(t, t.Operations[i].Strings[1]);
-                var ft := GetObjectType(fv);
-                if ft = 'bool' then
-                begin
-                  bool := boolean(fv);
-                end
-                else if ft = 'int' then
-                begin
-                  bool := integer(fv) <> 0;
-                end
-                else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, ft, 'int');
-              end;
-            end;
             if elselabel <> 0 then
             begin
               if not bool then i := elselabel else
@@ -978,7 +936,7 @@ type
           begin
             currentnestedlevel += 1;
             var exitlevel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
-            var bool := GetWhileBool(t, t.Operations[i]);
+            var bool := GetConditionValue(t, t.Operations[i], 1);
             
             if bool then
             begin
