@@ -9,15 +9,17 @@
 	loop 10 do
 		!write 0
 	end
-	while (1 = 1) do
-		exit
-	end
-	repeat
-		exit
-	until (1 = 1)
-	for i 1 10
+	//while (1 = 1) do
+	//	exit
+	//end
+	//repeat
+		//exit
+	//until (1 = 1)
+	!writeln
+	for i = 1 to 10 do
 		!write i
 	end
+	!writeln
 	int b = 1
 	if (b = 1) then
 		!writeln 'b is 1'
