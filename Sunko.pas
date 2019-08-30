@@ -1,4 +1,4 @@
-{$includenamespace Methods.pas}
+﻿{$includenamespace Methods.pas}
 program Sunko;
 uses System;
 uses System.IO;
