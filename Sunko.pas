@@ -93,12 +93,14 @@ begin
       if not ExecuteCommand(s) then raise new System.NullReferenceException($'Command {s} not found');
     end;
   except
+    {$ifndef EXTREMEDEBUG}
     on e: System.ArgumentException do WriteLnColor(ConsoleColor.Yellow, 'Compiler: Path contains invalid chars');
     on e: System.NullReferenceException do WritelnColor(ConsoleColor.Yellow, 'Compiler: Wrong command!');
     on e: System.IO.FileNotFoundException do WritelnColor(ConsoleColor.Yellow, $'Compiler: File "{s}" not found');
     on e: SemanticError do WritelnColor(ConsoleColor.Yellow, $'[{Path.GetFileName(s)}, {e.Source}]Error: {e.GetErrorMessage}');
     on e: SyntaxError do writelnColor(ConsoleColor.White, $'[{Path.GetFileName(s)}, {e.Source}]Error: {e.GetErrorMessage}');
     on e: SunkoError do writelnColor(ConsoleColor.Red, $'[{Path.GetFileName(s)}, {e.Source}]Undefined Compiler Error: {e.GetErrorMessage}');
+    {$endif}
     on e: System.Exception do writelnColor(ConsoleColor.Red, $'Internal Compiler Error: {e}');
   end;
 end;

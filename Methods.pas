@@ -291,6 +291,7 @@ type
               else if param[0].Item1 = 'real' then
               begin
                 Result := PABCSystem.Random*param[0].Item2.ToReal;
+                exit;
               end;
             end
             else if (param.Length = 2) then
@@ -341,6 +342,7 @@ type
               'real': Result := rslt.ConvertAll(x -> real(x));
               'string': Result := rslt.ConvertAll(x -> string(x));
             end;
+            exit;
           end;
         else
           begin

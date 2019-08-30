@@ -5,3 +5,7 @@ KTX/KTX.dll
 *.exe
 *.dll
 *.txt
+IDE/SunkoEditor/.vs
+IDE/SunkoEditor/obj
+IDE/SunkoEditor/bin
+*.ide
