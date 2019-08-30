@@ -549,8 +549,22 @@ type
           begin
             if (cyclenested.Count > 0) then
             begin
-              i := cyclelables.Pop + 1;
-              cyclenested.Pop; cyclestack.Pop; cyclewhiles.Pop;
+              i := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
+              case cyclestack.Pop of
+                1:
+                begin
+                  cyclenested.Pop; cyclewhiles.Pop;
+                end;
+                2:
+                begin
+                  cyclenested.Pop; cyclewhiles.Pop; cycleloops.Pop;
+                end;
+                3:
+                begin
+                  cyclenested.Pop; cycleforleft.Pop; cycleforright.Pop; cycleforstep.Pop; cycleforvariables.Pop;
+                end;
+              end;
+              
             end else i := t.Operations.Length;
           end;
           
