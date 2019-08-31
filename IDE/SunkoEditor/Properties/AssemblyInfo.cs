@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SunkoEditor")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Kotov Projects")]
 [assembly: AssemblyProduct("SunkoEditor")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2019")]
+[assembly: AssemblyCopyright("Alexandr Kotov")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

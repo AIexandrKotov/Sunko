@@ -23,58 +23,63 @@ namespace SunkoEditor
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            UseLocal(Localization.Russian);
+            MainStatusStrip.Text = local.StReady;
         }
+
+        private Localization local;
 
         private void OpenFile()
         {
-            toolStripStatusLabel1.Text = "Opening...";
+            FileStatusStrip.Text = local.StOpening;
 
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                var fn = openFileDialog1.FileName;
+                var fn = OpenFileDialog.FileName;
                 using (StreamReader reader = new StreamReader(fn, Encoding.UTF8))
                 {
-                    richTextBox1.Text = reader.ReadToEnd();
+                    MainTextBox.Text = reader.ReadToEnd();
                     reader.Close();
                 }
                 Program.currentfile = fn;
-                toolStripStatusLabel2.Text = Path.GetFileName(Program.currentfile);
+                FileNameStrip.Text = Path.GetFileName(Program.currentfile);
+                FileNameStrip.ToolTipText = Program.currentfile;
             }
 
-            toolStripStatusLabel1.Text = "Ready";
+            FileStatusStrip.Text = local.StReady;
         }
 
         private void SaveAsFile()
         {
-            toolStripStatusLabel1.Text = "Saving...";
+            FileStatusStrip.Text = local.StSaving;
 
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            if (SaveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                var fn = saveFileDialog1.FileName;
+                var fn = SaveFileDialog.FileName;
                 using (StreamWriter writer = new StreamWriter(fn, false, Encoding.UTF8))
                 {
-                    writer.Write(richTextBox1.Text);
+                    writer.Write(MainTextBox.Text);
                     writer.Close();
                 }
                 Program.currentfile = fn;
-                toolStripStatusLabel2.Text = Path.GetFileName(Program.currentfile);
+                FileNameStrip.Text = Path.GetFileName(Program.currentfile);
+                FileNameStrip.ToolTipText = Program.currentfile;
             }
 
-            toolStripStatusLabel1.Text = "Ready";
+            FileStatusStrip.Text = local.StReady;
         }
 
         private void SaveFile()
         {
             using (StreamWriter writer = new StreamWriter(Program.currentfile, false, Encoding.UTF8))
             {
-                writer.Write(richTextBox1.Text);
+                writer.Write(MainTextBox.Text);
             }
 
-            toolStripStatusLabel1.Text = "Ready";
+            FileStatusStrip.Text = local.StReady;
         }
 
-        private void NewToolStripMenuItem_Click(object sender, EventArgs e)
+        private void File_Open_Click(object sender, EventArgs e)
         {
             OpenFile();
         }
@@ -89,26 +94,26 @@ namespace SunkoEditor
 
         private System.Threading.Tasks.Task launchsunko = new Task(() => { });
 
-        private void RichTextBox1_TextChanged_1(object sender, EventArgs e)
+        private void MainTextBox_TextChanged(object sender, EventArgs e)
         {
-            toolStripStatusLabel1.Text = "Changed";
-            /* int xx = richTextBox1.SelectionStart;
+            FileStatusStrip.Text = local.StChange;
+            /*int xx = MainTextBox.SelectionStart;
             Font f = this.Font;
             foreach (var ho in Highlightning.Hights)
             {
-                MatchCollection allBW = Regex.Matches(richTextBox1.Text, ho.word);
+                MatchCollection allBW = Regex.Matches(MainTextBox.Text, ho.word);
                 foreach (Match findBW in allBW)
                 {
-                    richTextBox1.SelectionStart = findBW.Index;
-                    richTextBox1.SelectionLength = findBW.Length;
-                    richTextBox1.SelectionColor = ho.rgb;
-                    richTextBox1.SelectionFont = fbold;
+                    MainTextBox.SelectionStart = findBW.Index;
+                    MainTextBox.SelectionLength = findBW.Length;
+                    MainTextBox.SelectionColor = ho.rgb;
+                    MainTextBox.SelectionFont = fbold;
                 }
-                richTextBox1.SelectionStart = xx;
-                richTextBox1.SelectionLength = 0;
-                richTextBox1.SelectionColor = Color.Black;
-                richTextBox1.Font = fubold;
-            } */
+                MainTextBox.SelectionStart = xx;
+                MainTextBox.SelectionLength = 0;
+                MainTextBox.SelectionColor = Color.Black;
+                MainTextBox.Font = fubold;
+            }*/
         }
         
         private int CountSpaces(string s)
@@ -139,22 +144,17 @@ namespace SunkoEditor
             return sb.ToString();
         }
 
-        private void RichTextBox1_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
-
-        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void File_SaveAs_Click(object sender, EventArgs e)
         {
             SaveAsFile();
         }
 
-        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void File_Exit_Click(object sender, EventArgs e)
         {
             System.Environment.Exit(0);
         }
 
-        private void SaveToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void File_Save_Click(object sender, EventArgs e)
         {
             if (Program.currentfile != null)
             {
@@ -166,17 +166,12 @@ namespace SunkoEditor
             }
         }
 
-        private void StatusStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-
-        }
-
         private void LocalRun()
         {
             var s = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\sunko.snc";
             using (StreamWriter writer = new StreamWriter(s, false, Encoding.UTF8))
             {
-                writer.Write(richTextBox1.Text);
+                writer.Write(MainTextBox.Text);
                 writer.Close();
             }
             launchsunko = new Task(() =>
@@ -191,7 +186,7 @@ namespace SunkoEditor
             launchsunko.Start();
         }
 
-        private void RunToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Program_Run_Click(object sender, EventArgs e)
         {
             if (launchsunko.Status == TaskStatus.Running) return;
             if (Program.currentfile != null)
@@ -225,27 +220,31 @@ namespace SunkoEditor
             }
         }
 
-        private void ProgramToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ProgramStrip_Click(object sender, EventArgs e)
         {
-            programToolStripMenuItem1.Enabled = launchsunko.Status != TaskStatus.Running;
+            Program_Run.Enabled = launchsunko.Status != TaskStatus.Running;
         }
 
-        private void HelpToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Sunko Editor v1.0 by Alexandr Kotov");
-        }
-
-        private void ToolStripDropDownButton1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void NewToolStripMenuItem_Click_1(object sender, EventArgs e)
+        private void File_New_Click(object sender, EventArgs e)
         {
             Program.currentfile = null;
-            richTextBox1.Clear();
-            toolStripStatusLabel1.Text = "Ready";
-            toolStripStatusLabel2.Text = "sunko.snc";
+            MainTextBox.Clear();
+            FileStatusStrip.Text = local.StChange;
+            FileNameStrip.Text = "sunko.snc";
+            FileNameStrip.ToolTipText = "sunko.snc";
+        }
+
+        private void UseLocal(Localization local)
+        {
+            this.local = local;
+            this.FileStrip.Text = local.TsFILE;
+            this.File_New.Text = local.TNew;
+            this.File_Open.Text = local.TOpen;
+            this.File_Save.Text = local.TSave;
+            this.File_SaveAs.Text = local.TSaveAs;
+            this.File_Exit.Text = local.TExit;
+            this.ProgramStrip.Text = local.TsPROGRAM;
+            this.Program_Run.Text = local.TsRun;
         }
     }
 }
