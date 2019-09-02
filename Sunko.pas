@@ -1,5 +1,4 @@
-﻿{$includenamespace Methods.pas}
-program Sunko;
+﻿program Sunko;
 uses System;
 uses System.IO;
 {$resource 'ru.lng'}
@@ -29,7 +28,14 @@ uses System.IO;
 {$includenamespace Tree.pas}
 {$includenamespace SyntaxVisitor.pas}
 {$includenamespace TestSuite.pas}
+{$includenamespace CompiledTree.pas}
+{$includenamespace TreeReader.pas}
+{$includenamespace TreeWriter.pas}
+{$includenamespace Methods.pas}
 {$includenamespace Compiler.pas}
+
+var
+  CompileNotRun := false;
 
 procedure WriteColor<T>(c: ConsoleColor; s: T);
 begin
@@ -76,8 +82,13 @@ function NonCommand(s: string): boolean := (not s.StartsWith('!')) and (s <> '.'
 
 function ExecuteCommand(s: string): boolean;
 begin
-  if s.ToLower = '!exit' then System.Environment.Exit(0);
   Result := false;
+  if s.ToLower = '!exit' then System.Environment.Exit(0);
+  if s.ToLower = '!notrun' then
+  begin
+    Result := true;
+    CompileNotRun := true;
+  end;
 end;
 
 procedure Run(s: string);
@@ -86,9 +97,19 @@ begin
     if not string.IsNullOrWhiteSpace(s) then
     if NonCommand(s) then
     begin
-      var x := Compiler.Compile(Parser.GetString(s));
-      writelncolor(ConsoleColor.Green, ErrorResources.GetErrorResourceString(false, 'SUCCESS_COMPILATION', System.IO.Path.GetFileName(s), x.ToString));
-    end else
+      var pth := Parser.GetString(s);
+      var x := -1;
+      if CompileNotRun then
+      begin
+        Compiler.CompileSunko(pth);
+      end
+      else
+      begin
+        if pth.EndsWith('.sunko') then x := Compiler.Runsunko(pth) else x := Compiler.Compile(pth);
+      end;
+      if x > 0 then writelncolor(ConsoleColor.Green, ErrorResources.GetErrorResourceString(false, 'SUCCESS_COMPILATION', System.IO.Path.GetFileName(pth), x.ToString))
+      else writelncolor(ConsoleColor.Green, ErrorResources.GetErrorResourceString(false, 'SUCCESS_COMPILATION_SUNKO', System.IO.Path.GetFileName(pth)));
+    end else 
     begin
       if not ExecuteCommand(s) then raise new System.NullReferenceException($'Command {s} not found');
     end;
@@ -126,6 +147,11 @@ begin
     end;
     var ___x := new Tree(ReadAllLines('All.snc'));
     ___x.ToString;
+    begin
+      var sw := new BinaryWriter(System.IO.File.Create('All.sunko'));
+      TreeWriter.Write(sw, ___x);
+      sw.Close;
+    end;
     WriteLogo;
     while true do
     begin

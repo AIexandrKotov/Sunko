@@ -32,7 +32,7 @@ type
     
     public property Strings: array of string read fStrings write fStrings;
     public property WordTypes: array of WordType read fWordsTypes write fWordsTypes;
-    public property OperationType: Sunko.OperationType read fOperationType;
+    public property OperationType: Sunko.OperationType read fOperationType write fOperationType;
     
     private static assignmenttypes := Arr(typeof(IntegerLiteral), typeof(StringLiteral), typeof(RealLiteral), typeof(DateLiteral), typeof(Expression), typeof(Sunko.FunctionCall), typeof(VariableName));
     private static conditiontypes := Arr(typeof(IntegerLiteral), typeof(Expression), typeof(Sunko.FunctionCall), typeof(VariableName));

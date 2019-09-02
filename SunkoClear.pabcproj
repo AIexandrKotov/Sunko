@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project FileVersion="2" Name="Sunko" MainFile="Sunko.pas" OutputFileName="Sunko.exe" OutputDirectory="" ProjectType="ConsoleApp" IncludeDebugInfo="True" GenerateXMLDoc="False" CommandLineArguments="" AppIcon="" DeleteEXE="False" DeletePDB="True" Product="" Company="" Trademark="" Copyright="" Title="" Description="" MajorVersion="0" MinorVersion="0" BuildVersion="0" RevisionVersion="0">
+<Project FileVersion="2" Name="SunkoClear" MainFile="SunkoClear.pas" OutputFileName="SunkoClear.exe" OutputDirectory="" ProjectType="WindowsApp" IncludeDebugInfo="True" GenerateXMLDoc="False" CommandLineArguments="" AppIcon="" DeleteEXE="False" DeletePDB="True" Product="" Company="" Trademark="" Copyright="" Title="" Description="" MajorVersion="0" MinorVersion="0" BuildVersion="0" RevisionVersion="0">
   <Items>
-    <Item Type="SourceFile" Name="CompiledTree.pas" Path="CompiledTree.pas" />
     <Item Type="SourceFile" Name="Compiler.pas" Path="Compiler.pas" />
     <Item Type="SourceFile" Name="Methods.pas" Path="Methods.pas" />
     <Item Type="SourceFile" Name="Operation.pas" Path="Operation.pas" />
@@ -12,8 +11,6 @@
     <Item Type="SourceFile" Name="SyntaxVisitor.pas" Path="SyntaxVisitor.pas" />
     <Item Type="SourceFile" Name="TestSuite.pas" Path="TestSuite.pas" />
     <Item Type="SourceFile" Name="Tree.pas" Path="Tree.pas" />
-    <Item Type="SourceFile" Name="TreeReader.pas" Path="TreeReader.pas" />
-    <Item Type="SourceFile" Name="TreeWriter.pas" Path="TreeWriter.pas" />
     <Item Type="SourceFile" Name="Version.pas" Path="Version.pas" />
     <Item Type="SourceFile" Name="WordType.pas" Path="WordTypes\WordType.pas" />
     <Item Type="SourceFile" Name="WT: ConstantName.pas" Path="WordTypes\ConstantName.pas" />
@@ -30,6 +27,7 @@
     <Item Type="SourceFile" Name="WT: TypeName.pas" Path="WordTypes\TypeName.pas" />
     <Item Type="SourceFile" Name="WT: VariableName.pas" Path="WordTypes\VariableName.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
+    <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.Windows.Forms.dll" />
     <Item Type="Reference" AssemblyName="System.Data" FullAssemblyName="System.Data.dll" />
     <Item Type="Reference" AssemblyName="KTX" FullAssemblyName="KTX.dll" />
   </Items>

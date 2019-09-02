@@ -19,12 +19,23 @@ namespace SunkoEditor
         public Form1()
         {
             InitializeComponent();
+            this.FileStrip.DropDown.AutoSize = false;
+            this.FileStrip.DropDown.Size = new Size(160, 114);
+            this.ProgramStrip.DropDown.AutoSize = false;
+            this.ProgramStrip.DropDown.Size = new Size(180, 48);
+            this.ToolsStrip.DropDown.AutoSize = false;
+            this.ToolsStrip.DropDown.Size = new Size(200, 26);
+            this.EditStrip.DropDown.AutoSize = false;
+            this.EditStrip.DropDown.Size = new Size(170, 142);
+            TurnOffEdit();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             UseLocal(Localization.Russian);
             MainStatusStrip.Text = local.StReady;
+            //SetsForm = new SettingsForm();
+            //SetsForm.UseLocal(Localization.Russian);
         }
 
         private Localization local;
@@ -94,9 +105,13 @@ namespace SunkoEditor
 
         private System.Threading.Tasks.Task launchsunko = new Task(() => { });
 
+        internal Localization Local { get => local; set => local = value; }
+
         private void MainTextBox_TextChanged(object sender, EventArgs e)
         {
             FileStatusStrip.Text = local.StChange;
+            FileLength.Text = MainTextBox.Text.Length.ToString();
+            FileLines.Text = MainTextBox.Lines.Length.ToString();
             /*int xx = MainTextBox.SelectionStart;
             Font f = this.Font;
             foreach (var ho in Highlightning.Hights)
@@ -193,20 +208,16 @@ namespace SunkoEditor
             {
                 if (File.Exists("Sunko.exe"))
                 {
-                    //if (!File.Exists(Program.currentfile))
-                    //{
                     File.WriteAllText("log.txt", Program.currentfile);
-                        launchsunko = new Task(() =>
-                        {
-                            var pr = new Process();
-                            pr.StartInfo.FileName = "Sunko.exe";
-                            pr.StartInfo.Arguments = "'" + Program.currentfile + "'";
-                            pr.Start();
-                            while (Process.GetProcessesByName("Sunko").Any()) { System.Threading.Thread.Sleep(5); }
-                        });
-                        launchsunko.Start();
-                    //}
-                    //else File.WriteAllText("log.txt", File.ReadAllText(Program.currentfile));
+                    launchsunko = new Task(() =>
+                    {
+                        var pr = new Process();
+                        pr.StartInfo.FileName = "Sunko.exe";
+                        pr.StartInfo.Arguments = "'" + Program.currentfile + "'";
+                        pr.Start();
+                        while (Process.GetProcessesByName("Sunko").Any()) { System.Threading.Thread.Sleep(5); }
+                    });
+                    launchsunko.Start();
                 }
                 else MessageBox.Show("Sunko script not exists");
             }
@@ -220,9 +231,28 @@ namespace SunkoEditor
             }
         }
 
+        private void Program_Compile_Click(object sender, EventArgs e)
+        {
+            if (File.Exists("Sunko.exe"))
+            {
+                File.WriteAllText("log.txt", Program.currentfile);
+                launchsunko = new Task(() =>
+                {
+                    var pr = new Process();
+                    pr.StartInfo.FileName = "Sunko.exe";
+                    pr.StartInfo.Arguments = "!notrun" + " '" + Program.currentfile + "'";
+                    pr.Start();
+                    while (Process.GetProcessesByName("Sunko").Any()) { System.Threading.Thread.Sleep(5); }
+                });
+                launchsunko.Start();
+            }
+            else MessageBox.Show("Sunko script not exists");
+        }
+
         private void ProgramStrip_Click(object sender, EventArgs e)
         {
             Program_Run.Enabled = launchsunko.Status != TaskStatus.Running;
+            Program_Compile.Enabled = !string.IsNullOrEmpty(Program.currentfile) && launchsunko.Status != TaskStatus.Running;
         }
 
         private void File_New_Click(object sender, EventArgs e)
@@ -234,7 +264,7 @@ namespace SunkoEditor
             FileNameStrip.ToolTipText = "sunko.snc";
         }
 
-        private void UseLocal(Localization local)
+        internal void UseLocal(Localization local)
         {
             this.local = local;
             this.FileStrip.Text = local.TsFILE;
@@ -243,8 +273,78 @@ namespace SunkoEditor
             this.File_Save.Text = local.TSave;
             this.File_SaveAs.Text = local.TSaveAs;
             this.File_Exit.Text = local.TExit;
+            this.EditStrip.Text = local.TsEDIT;
+            this.Edit_Undo.Text = local.TUndo;
+            this.Edit_Redo.Text = local.TRedo;
+            this.Edit_Paste.Text = local.TPaste;
+            this.Edit_Copy.Text = local.TCopy;
+            this.Edit_Cut.Text = local.TCut;
+            this.Editor_SelectAll.Text = local.TSelectAll;
             this.ProgramStrip.Text = local.TsPROGRAM;
-            this.Program_Run.Text = local.TsRun;
+            this.Program_Run.Text = local.TRun;
+            this.Program_Compile.Text = local.TCompile;
+            this.ToolsStrip.Text = local.TsTOOLS;
+            this.Tools_Settings.Text = local.TsSettings;
+        }
+
+        public bool TextBoxShortcuts { get => this.MainTextBox.ShortcutsEnabled; set => this.MainTextBox.ShortcutsEnabled = value; }
+
+        public void TurnOnEdit()
+        {
+            this.EditStrip.Visible = true;
+            this.MainTextBox.ShortcutsEnabled = false;
+        }
+
+        public void TurnOffEdit()
+        {
+            this.EditStrip.Visible = false;
+            this.MainTextBox.ShortcutsEnabled = true;
+        }
+
+        private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Enabled = false;
+            SettingsForm SetsForm = new SettingsForm(this);
+            SetsForm.Show();
+        }
+
+        private void Edit_Undo_Click(object sender, EventArgs e)
+        {
+            MainTextBox.Undo();
+        }
+
+        private void EditStrip_Click(object sender, EventArgs e)
+        {
+            Edit_Undo.Enabled = MainTextBox.CanUndo;
+            Edit_Redo.Enabled = MainTextBox.CanRedo;
+            Edit_Cut.Enabled = MainTextBox.SelectionLength > 0;
+            Edit_Copy.Enabled = MainTextBox.SelectionLength > 0;
+            Edit_Paste.Enabled = Clipboard.ContainsText();
+        }
+
+        private void Edit_Redo_Click(object sender, EventArgs e)
+        {
+            MainTextBox.Redo();
+        }
+
+        private void Edit_Cut_Click(object sender, EventArgs e)
+        {
+            MainTextBox.Cut();
+        }
+
+        private void Edit_Paste_Click(object sender, EventArgs e)
+        {
+            if (Clipboard.ContainsText()) MainTextBox.Paste();
+        }
+
+        private void Edit_Copy_Click(object sender, EventArgs e)
+        {
+            MainTextBox.Copy();
+        }
+
+        private void Edit_SelectAll_Click(object sender, EventArgs e)
+        {
+            MainTextBox.SelectAll();
         }
     }
 }

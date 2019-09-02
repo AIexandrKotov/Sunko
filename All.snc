@@ -26,4 +26,5 @@
 	else
 		!writeln 'b is 0'
 	end
+	int sswerew = {array 1 2 3}
 end

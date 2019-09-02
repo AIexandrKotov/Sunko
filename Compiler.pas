@@ -1,5 +1,7 @@
 ﻿namespace Sunko;
 
+uses System.IO;
+
 type
   Compiler = static class
     public static function GetDefaultValue(typename: string): object;
@@ -744,6 +746,25 @@ type
       Tree.SyntaxVisitor(tr);
       Compile(tr);
       Result := t.Length;
+    end;
+    
+    public static procedure Compilesunko(fname: string);
+    begin
+      var t := ReadAllLines(fname);
+      var tr := new Tree(t);
+      var sw := new BinaryWriter(System.IO.File.Create(Path.ChangeExtension(fname, '.sunko')));
+      TreeWriter.Write(sw, tr);
+      sw.Close;
+    end;
+    
+    public static function Runsunko(fname: string): integer;
+    begin
+      var sr := new BinaryReader(System.IO.File.OpenRead(fname));
+      var tr := TreeReader.Read(sr);
+      sr.Close;
+      Tree.SyntaxVisitor(tr);
+      Compile(tr);
+      Result := -1;
     end;
   end;
 

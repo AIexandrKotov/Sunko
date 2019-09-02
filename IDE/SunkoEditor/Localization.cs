@@ -9,8 +9,10 @@ namespace SunkoEditor
 {
     class Localization
     {
-        private string tsFILE, tNew, tOpen, tSave, tSaveAs, tExit, tsPROGRAM, tsRun;
+        private string tsFILE, tNew, tOpen, tSave, tSaveAs, tExit, tsPROGRAM, tRun, tCompile, tsTOOLS, tsSettings, tsEDIT, tUndo, tRedo, tCut, tCopy, tPaste, tSelectAll;
         private string stReady, stSaving, stOpening, stChange;
+        private string swSetLanguage, swEnableEdit;
+        private string formSettings;
 
         public static Localization English, Russian;
 
@@ -23,29 +25,42 @@ namespace SunkoEditor
             tSaveAs = dict["tsaveas"];
             tExit = dict["texit"];
             tsPROGRAM = dict["tsprogram"];
-            tsRun = dict["tsrun"];
+            tRun = dict["trun"];
+            tCompile = dict["tcompile"];
+            tsTOOLS = dict["tstools"];
+            tsSettings = dict["tssettings"];
             stReady = dict["stready"];
             stSaving = dict["stsaving"];
             stOpening = dict["stopening"];
             stChange = dict["stchange"];
+            swSetLanguage = dict["swsetlanguage"];
+            formSettings = dict["formsettings"];
+            tsEDIT = dict["tsedit"];
+            tUndo = dict["tundo"];
+            tRedo = dict["tredo"];
+            tCut = dict["tcut"];
+            tPaste = dict["tpaste"];
+            tCopy = dict["tcopy"];
+            tSelectAll = dict["tselectall"];
+            swEnableEdit = dict["swenableedit"];
         }
 
         public Localization(string local)
         {
             var dict = new Dictionary<string, string>();
-            try
-            {
+            //try
+            //{
                 foreach (var x in File.ReadAllLines(local).Select(x => x.Split('=')))
                 {
                     dict.Add(x[0].ToLower(), x[1]);
                 }
-                try
+                //try
                 {
                     SetFiels(dict);
                 }
-                finally { }
-            }
-            finally { }
+                //finally { }
+            //}
+            //finally { }
         }
 
         public Localization(Stream stream)
@@ -84,6 +99,19 @@ namespace SunkoEditor
         public string TSaveAs { get => tSaveAs; set => tSaveAs = value; }
         public string TExit { get => tExit; set => tExit = value; }
         public string TsPROGRAM { get => tsPROGRAM; set => tsPROGRAM = value; }
-        public string TsRun { get => tsRun; set => tsRun = value; }
+        public string TRun { get => tRun; set => tRun = value; }
+        public string SwSetLanguage { get => swSetLanguage; set => swSetLanguage = value; }
+        public string FormSettings { get => formSettings; set => formSettings = value; }
+        public string TsTOOLS { get => tsTOOLS; set => tsTOOLS = value; }
+        public string TsSettings { get => tsSettings; set => tsSettings = value; }
+        public string TsEDIT { get => tsEDIT; set => tsEDIT = value; }
+        public string TUndo { get => tUndo; set => tUndo = value; }
+        public string TRedo { get => tRedo; set => tRedo = value; }
+        public string TCut { get => tCut; set => tCut = value; }
+        public string TCopy { get => tCopy; set => tCopy = value; }
+        public string TPaste { get => tPaste; set => tPaste = value; }
+        public string TSelectAll { get => tSelectAll; set => tSelectAll = value; }
+        public string SwEnableEdit { get => swEnableEdit; set => swEnableEdit = value; }
+        public string TCompile { get => tCompile; set => tCompile = value; }
     }
 }

@@ -8,7 +8,7 @@ type
         if t.Variables[x].NestedLevel > nlevel then t.Variables.Remove(x);
     end;
     
-    public static procedure visit(t: Tree);
+    public static procedure visit(var t: Tree);
     begin
       var currentnested := -1;
       var i := 0;
@@ -89,6 +89,9 @@ type
           else i += 1;
         end;
       end;
+      t.Labels.Clear;
+      t.Variables.Clear;
+      t.fSource := 0;
     end;
   end;
 

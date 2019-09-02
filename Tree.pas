@@ -36,17 +36,31 @@ type
       if nested <> 0 then raise new SyntaxError('WRONG_STRUCTURE', 0);
     end;
     
+    public static procedure LabelVisitor(var t: Tree);
+    begin
+      for var i := 0 to t.Operations.Count - 1 do
+      begin
+        if t.Operations[i].OperationType = LabelDefinition then t.fLabels.Add(t.Operations[i].Strings[1].ToInteger, i);
+      end;
+    end;
+    
     public static procedure SyntaxVisitor(var t: Tree);
     begin
       NestedsVisitor(t);
       SyntaxTreeVisitor.visit(t);
+      LabelVisitor(t);
+    end;
+    
+    public constructor;
+    begin
+      fVariables := new Dictionary<string, SunkoVariable>;
+      fLabels := new Dictionary<integer, integer>;
     end;
     
     public constructor(ss: array of string);
     begin
+      Create();
       var ops := new List<Operation>;
-      fVariables := new Dictionary<string, SunkoVariable>;
-      fLabels := new Dictionary<integer, integer>;
       
       Parser.CommentVisitor(ss);
       Parser.WhiteSpacesVisitor(ss);
@@ -65,10 +79,6 @@ type
         end;
         {$endif}
         if (not string.IsNullOrWhiteSpace(ss[i])) and (not ss[i].StartsWith('//')) then ops += Parser.Parse(ss[i], i + 1);
-      end;
-      for var i := 0 to ops.Count - 1 do
-      begin
-        if ops[i].OperationType = LabelDefinition then fLabels.Add(ops[i].Strings[1].ToInteger, i);
       end;
       {$ifdef DEBUG} fAllsnc := false; {$endif}
       fOperations := ops.ToArray;
