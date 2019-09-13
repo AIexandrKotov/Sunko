@@ -233,6 +233,20 @@ namespace SunkoEditor
 
         private void Program_Compile_Click(object sender, EventArgs e)
         {
+            if (File.Exists("SunkoClear.exe"))
+            {
+                File.WriteAllText("log.txt", Program.currentfile);
+                launchsunko = new Task(() =>
+                {
+                    var pr = new Process();
+                    pr.StartInfo.FileName = "SunkoClear.exe";
+                    pr.StartInfo.Arguments = "!notrun" + " '" + Program.currentfile + "'";
+                    pr.Start();
+                    while (Process.GetProcessesByName("Sunko").Any()) { System.Threading.Thread.Sleep(5); }
+                });
+                launchsunko.Start();
+            }
+            else
             if (File.Exists("Sunko.exe"))
             {
                 File.WriteAllText("log.txt", Program.currentfile);
