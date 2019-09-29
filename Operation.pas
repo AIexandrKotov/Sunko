@@ -5,6 +5,7 @@ type
     DeclareVariable = 2,
     AssignmentVariable = 4,
     DeclareWithAssignment = 8,
+    AutotypeDeclare = 12,
     DestructionVariable = 16,
     ConditionOperator = 32,
     ElseOperator = 64,
@@ -81,6 +82,18 @@ type
           begin
             Result := ForCycleOperator;
             exit;
+          end
+          else if x.Strings[0] = 'var' then
+          begin
+            if x.WordTypes[1] is VariableName then
+              if x.WordTypes[2] is Splitter then
+              begin
+                if assignmenttypes.Contains(x.WordTypes[3].GetType) then
+                begin
+                  Result := AutotypeDeclare;
+                  exit;
+                end;
+              end;
           end;
         end;
       end;

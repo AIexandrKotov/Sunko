@@ -16,6 +16,8 @@ type
     
     private static fliterals := new System.Type[](typeof(IntegerLiteral), typeof(StringLiteral), typeof(RealLiteral), typeof(DateLiteral));
     
+    public static StaticTypes := true;
+    
     public static function Isliteral(o: WordType) := fliterals.Contains(o.GetType);
     
     public static function GetLiteralValue(lt: WordType; literal: string): object;
@@ -142,7 +144,7 @@ type
     public static procedure AssignmentDefinitionLiteral(var t: Tree; varname: string; literal: string; literaltype: WordType);
     begin
       var littypestr := GetLiteralType(literaltype);
-      if t.Variables[varname].SunkoType <> littypestr then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, littypestr, t.Variables[varname].SunkoType);
+      if (StaticTypes) and (t.Variables[varname].SunkoType <> littypestr) then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, littypestr, t.Variables[varname].SunkoType);
       t.Variables[varname].Value := GetLiteralValue(literaltype, literal);
     end;
     
@@ -177,7 +179,7 @@ type
               var vname2 := o.Strings[2];
               var type1 := GetObjectType(t.Variables[vname2].Value);
               var type2 := GetObjectType(t.Variables[vname2].Value);
-              if type1 <> type2 then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, type1, type2);
+              if (StaticTypes) and (type1 <> type2) then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, type1, type2);
               AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
             end;
             Expression(var exp):
@@ -189,7 +191,7 @@ type
                 expr := object(integer(boolean(expr) ? 1 : 0));
                 exprtype := 'int';
               end;
-              if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
+              if (StaticTypes) and (exprtype <> t.Variables[vname].SunkoType) then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
               AssignmentDefinitionValue(t, vname, expr);
             end;
             Sunko.FunctionCall(var fcall):
@@ -201,7 +203,7 @@ type
                 ofunc := object(integer(boolean(ofunc) ? 1 : 0));
                 otype := 'int';
               end;
-              if otype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, otype, t.Variables[vname].SunkoType);
+              if (StaticTypes) and (otype <> t.Variables[vname].SunkoType) then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, otype, t.Variables[vname].SunkoType);
               AssignmentDefinitionValue(t, vname, ofunc);
             end;
           end;
@@ -232,7 +234,7 @@ type
               var vname2 := o.Strings[3];
               var type1 := GetObjectType(t.Variables[vname2].Value);
               var type2 := GetObjectType(t.Variables[vname2].Value);
-              if type1 <> type2 then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, type1, type2);
+              if (StaticTypes) and (type1 <> type2) then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, type1, type2);
               AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
             end;
             Expression(var exp):
@@ -245,7 +247,7 @@ type
                 expr := object(integer(boolean(expr) ? 1 : 0));
                 exprtype := 'int';
               end;
-              if exprtype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
+              if (StaticTypes) and (exprtype <> t.Variables[vname].SunkoType) then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, exprtype, t.Variables[vname].SunkoType);
               AssignmentDefinitionValue(t, vname, expr);
             end;
             Sunko.FunctionCall(var fcall):
@@ -258,7 +260,57 @@ type
                 ofunc := object(integer(boolean(ofunc) ? 1 : 0));
                 otype := 'int';
               end;
-              if otype <> t.Variables[vname].SunkoType then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, otype, t.Variables[vname].SunkoType);
+              if (StaticTypes) and (otype <> t.Variables[vname].SunkoType) then raise new SemanticError('CANNOT_CONVERT_TYPES', t.Source, otype, t.Variables[vname].SunkoType);
+              AssignmentDefinitionValue(t, vname, ofunc);
+            end;
+            else raise new SemanticError('NOT_SUPPORTED', t.Source);
+          end;
+        end;
+        
+        AutotypeDeclare:
+        begin
+          var vname := o.Strings[1];
+          var vtype := string.Empty;
+          
+          if t.Variables.ContainsKey(vname) then raise new SyntaxError('VARIABLE_ALREADY_DECLARED', t.Source, vname);
+          
+          if Isliteral(o.WordTypes[3]) then
+          begin
+            vtype := GetLiteralType(o.WordTypes[3]);
+            DeclarationDefinition(t, vname, vtype, nested);
+            AssignmentDefinitionLiteral(t, vname, o.Strings[3], o.WordTypes[3]);
+          end
+          else
+          match o.WordTypes[3] with
+            VariableName(var rightvar):
+            begin
+              var vname2 := o.Strings[3];
+              var type2 := GetObjectType(t.Variables[vname2].Value);
+              DeclarationDefinition(t, vname, type2, nested);
+              AssignmentDefinitionValue(t, vname, t.Variables[vname2].Value);
+            end;
+            Expression(var exp):
+            begin
+              var expr := GetExpressionValue(t, o.Strings[3]);
+              var exprtype := GetObjectType(expr);
+              if exprtype = 'bool' then
+              begin
+                expr := object(integer(boolean(expr) ? 1 : 0));
+                exprtype := 'int';
+              end;
+              DeclarationDefinition(t, vname, exprtype, nested);
+              AssignmentDefinitionValue(t, vname, expr);
+            end;
+            Sunko.FunctionCall(var fcall):
+            begin
+              var ofunc := Methods.FunctionCall(t, o.Strings[3]);
+              var otype := GetObjectType(ofunc);
+              if otype = 'bool' then
+              begin
+                ofunc := object(integer(boolean(ofunc) ? 1 : 0));
+                otype := 'int';
+              end;
+              DeclarationDefinition(t, vname, otype, nested);
               AssignmentDefinitionValue(t, vname, ofunc);
             end;
             else raise new SemanticError('NOT_SUPPORTED', t.Source);
@@ -351,14 +403,14 @@ type
           begin
             Result := integer(expr) <> 0;
           end
-          else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, 'int');
+          else if (StaticTypes) then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, exprtype, 'int');
         end;
         VariableName(var __vname):
         begin
           var vname := op.Strings[pos];
           if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
           var tp := GetObjectType(t.Variables[vname].Value);
-          if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
+          if (StaticTypes) and (not (tp = 'int')) then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
           Result := integer(t.Variables[vname].Value) <> 0;
         end;
         IntegerLiteral(var int):
@@ -377,7 +429,7 @@ type
           begin
             Result := integer(fv) <> 0;
           end
-          else raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, ft, 'int');
+          else if (StaticTypes) then raise new SemanticError($'CANNOT_CONVERT_TYPES', t.Source, ft, 'int');
         end;
       end;
     end;
@@ -394,7 +446,7 @@ type
           var vname := op.Strings[pos];
           if not t.Variables.ContainsKey(vname) then raise new SemanticError('VARIABLE_NOT_DECLARED', t.Source, vname);
           var tp := GetObjectType(t.Variables[vname].Value);
-          if not (tp = 'int') then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
+          if (StaticTypes) and (not (tp = 'int')) then raise new SemanticError('CANNOT_CONVERT_TYPE', t.Source, tp, 'int');
           Result := integer(t.Variables[vname].Value);
         end;
         Expression(var o):
@@ -570,7 +622,7 @@ type
             end else i := t.Operations.Length;
           end;
           
-          DeclareVariable, AssignmentVariable, DeclareWithAssignment, DestructionVariable:
+          DeclareVariable, AssignmentVariable, DeclareWithAssignment, DestructionVariable, AutotypeDeclare:
           begin
             DeclarationAndAssignment(t, t.Operations[i], currentnestedlevel);
             i += 1;

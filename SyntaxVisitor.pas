@@ -53,6 +53,14 @@ type
             if not t.Variables.ContainsKey(vname) then raise new SyntaxError('VARIABLE_NOT_DECLARED', t.Source, vname);
             i += 1;
           end;
+          AutotypeDeclare:
+          begin
+            var vname := t.Operations[i].Strings[1];
+            var typ := '';
+            if t.Variables.ContainsKey(vname) then raise new SyntaxError('VARIABLE_ALREADY_DECLARED', t.Source, vname);
+            t.Variables.Add(vname, new SunkoVariable(nil, typ, currentnested));
+            i += 1;
+          end;
           ForCycleOperator:
           begin
             currentnested += 1;

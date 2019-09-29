@@ -1,0 +1,8 @@
+sunko
+	var i = 1
+	var d = i/5
+	var t1 = {GetType i}
+	var t2 = {GetType d}
+	!writeln t1
+	!writeln t2
+end
