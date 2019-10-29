@@ -660,16 +660,27 @@ type
           begin
             currentnestedlevel += 1;
             var exitlevel := FindNextEndOnThisNestedLevel(t, i, currentnestedlevel);
-            cyclelables += i;
-            cycleforleft += GetIntegerValue(t, t.Operations[i], 3);
-            AssignCycleVariable(t, currentnestedlevel, t.Operations[i].Strings[1], cycleforleft.Peek);
-            cycleforvariables += t.Operations[i].Strings[1];
-            cyclenested += word(currentnestedlevel);
-            cyclestack += byte(3);
-            cycleforright += GetIntegerValue(t, t.Operations[i], 5);
-            if cycleforleft.Peek >= cycleforright.Peek then cycleforstep += -1 else cycleforstep += 1;
-            
-            i += 1;
+            var cycleto := t.Operations[i].Strings[4] = 'to';
+            var left := GetIntegerValue(t, t.Operations[i], 3);
+            var right := GetIntegerValue(t, t.Operations[i], 5);
+            if (cycleto ? (right >= left) : (left >= right)) then
+            begin
+              cyclelables += i;
+              AssignCycleVariable(t, currentnestedlevel, t.Operations[i].Strings[1], left);
+              cycleforleft += GetIntegerValue(t, t.Operations[i], 3);
+              cycleforright += GetIntegerValue(t, t.Operations[i], 5);
+              cycleforvariables += t.Operations[i].Strings[1];
+              cyclenested += word(currentnestedlevel);
+              cyclestack += byte(3);
+              if (cycleto) then cycleforstep += 1 else cycleforstep += -1;
+              i += 1
+            end
+            else
+            begin
+              currentnestedlevel -= 1;
+              i := exitlevel + 1;
+              continue;
+            end;
           end;
           
           LoopCycleOperator:

@@ -10,3 +10,4 @@ IDE/SunkoEditor/obj
 IDE/SunkoEditor/bin
 *.ide
 *.db
+*.sunko

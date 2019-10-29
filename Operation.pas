@@ -205,7 +205,7 @@ type
       begin
         if (x.WordTypes[0] is KeyWord) and (x.WordTypes[2] is Splitter) and (x.WordTypes[4] is Keyword) and (x.WordTypes[6] is KeyWord) then
         begin
-          if (x.Strings[0] = 'for') and (x.Strings[2] = '=') and (x.Strings[4] = 'to') and (x.Strings[6] = 'do') then
+          if (x.Strings[0] = 'for') and (x.Strings[2] = '=') and ((x.Strings[4] = 'to') or (x.Strings[4] = 'downto')) and (x.Strings[6] = 'do') then
           begin
             if (x.WordTypes[1] is VariableName) and (conditiontypes.Contains(x.WordTypes[3].GetType)) and (conditiontypes.Contains(x.WordTypes[5].GetType)) then
             begin
