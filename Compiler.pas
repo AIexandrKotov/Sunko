@@ -667,8 +667,8 @@ type
             begin
               cyclelables += i;
               AssignCycleVariable(t, currentnestedlevel, t.Operations[i].Strings[1], left);
-              cycleforleft += GetIntegerValue(t, t.Operations[i], 3);
-              cycleforright += GetIntegerValue(t, t.Operations[i], 5);
+              cycleforleft += left;
+              cycleforright += right;
               cycleforvariables += t.Operations[i].Strings[1];
               cyclenested += word(currentnestedlevel);
               cyclestack += byte(3);
