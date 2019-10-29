@@ -6,10 +6,15 @@ type
     begin
       var points := 0;
       Result := true;
-      for var i := 1 to s.Length do
+      if not ((s[1] = '-') or (s[1] = '+') or (s[1].IsDigit)) then
+      begin
+        result := false;
+        exit;
+      end;
+      for var i := 2 to s.Length do
       begin
         if s[i] = '.' then points += 1 else
-          if not s[i].IsDigit then
+          if not (s[i].IsDigit) then
           begin
             result := false;
             break;

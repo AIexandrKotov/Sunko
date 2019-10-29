@@ -1,6 +1,7 @@
 ﻿program Sunko;
 uses System;
 uses System.IO;
+{$reference 'KTX.dll'}
 {$resource 'ru.lng'}
 {$resource 'en.lng'}
 

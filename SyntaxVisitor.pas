@@ -79,9 +79,9 @@ type
               begin
                 var vname2 := t.Operations[i].Strings[3];
                 if t.Variables.ContainsKey(vname2) then
-                begin
-                  if typ <> t.Variables[vname2].SunkoType then raise new SyntaxError('CANNOT_CONVERT_TYPES', t.Source, t.Variables[vname2].SunkoType, typ);
-                end
+                //begin
+                //  if typ <> t.Variables[vname2].SunkoType then raise new SyntaxError('CANNOT_CONVERT_TYPES', t.Source, t.Variables[vname2].SunkoType, typ);
+                //end
                 else raise new SyntaxError('VARIABLE_NOT_DECLARED', t.Source, vname2);
               end;
             end;

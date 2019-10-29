@@ -1,0 +1,4 @@
+sunko
+    var i = -10
+    int x = i
+end

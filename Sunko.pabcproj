@@ -31,6 +31,5 @@
     <Item Type="SourceFile" Name="WT: VariableName.pas" Path="WordTypes\VariableName.pas" />
     <Item Type="Reference" AssemblyName="System" FullAssemblyName="System.dll" />
     <Item Type="Reference" AssemblyName="System.Data" FullAssemblyName="System.Data.dll" />
-    <Item Type="Reference" AssemblyName="KTX" FullAssemblyName="KTX.dll" />
   </Items>
 </Project>
