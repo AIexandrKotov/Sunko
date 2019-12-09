@@ -17,28 +17,7 @@ type
     begin
       if '//' in s then
       begin
-        var c := 0;
-        var sb := new StringBuilder;
-        for var i := 1 to s.Length do
-        begin
-          if s[i] = '/' then
-          begin
-            if c = 1 then
-            begin
-              break;
-            end else
-            begin
-              c += 1;
-              if s[i + 1] <> '/' then sb += s[i];
-            end;
-          end
-          else
-          begin
-            c := 0;
-            sb += s[i];
-          end;
-        end;
-        s := sb.ToString;
+        s := s.Remove(s.IndexOf('//'));
       end;
     end;
     
